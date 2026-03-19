@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="6853ea173c774d6f8092a21bd9093682" Name="Diagram1">
+        <EntityTypeShape EntityType="HabitTrackerModel.Categories" Width="1.5" PointX="3" PointY="5" />
+        <EntityTypeShape EntityType="HabitTrackerModel.HabitCategories" Width="1.5" PointX="5.25" PointY="5.625" />
+        <EntityTypeShape EntityType="HabitTrackerModel.HabitRecords" Width="1.5" PointX="5.25" PointY="1.5" />
+        <EntityTypeShape EntityType="HabitTrackerModel.Habits" Width="1.5" PointX="3" PointY="1.125" />
+        <EntityTypeShape EntityType="HabitTrackerModel.Statuses" Width="1.5" PointX="3" PointY="9.75" />
+        <EntityTypeShape EntityType="HabitTrackerModel.Users" Width="1.5" PointX="0.75" PointY="3.375" />
+        <EntityTypeShape EntityType="HabitTrackerModel.vwCurrentStreaks" Width="1.5" PointX="7.75" PointY="0.75" />
+        <EntityTypeShape EntityType="HabitTrackerModel.vwDailyStats" Width="1.5" PointX="7.75" PointY="3.75" />
+        <EntityTypeShape EntityType="HabitTrackerModel.vwWeeklyHabitStats" Width="1.5" PointX="7.75" PointY="7.75" />
+        <AssociationConnector Association="HabitTrackerModel.FK_Categories_Users" />
+        <AssociationConnector Association="HabitTrackerModel.FK_HabitCategories_Categories" />
+        <AssociationConnector Association="HabitTrackerModel.FK_HabitCategories_Habits" />
+        <AssociationConnector Association="HabitTrackerModel.FK_HabitRecords_Habits" />
+        <AssociationConnector Association="HabitTrackerModel.FK_HabitRecords_Statuses" />
+        <AssociationConnector Association="HabitTrackerModel.FK_Habits_Users" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

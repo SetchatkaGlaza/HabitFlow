@@ -1,0 +1,9 @@
+echo "bin/
+obj/
+.vs/
+packages/
+*.user
+*.suo
+*.cache
+*.csproj.user
+appsettings.Development.json" > .gitignore

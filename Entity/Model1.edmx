@@ -1,0 +1,706 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="Хранилище HabitTrackerModel" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Categories">
+          <Key>
+            <PropertyRef Name="CategoryId" />
+          </Key>
+          <Property Name="CategoryId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="CategoryName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="500" />
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="Color" Type="nvarchar" MaxLength="7" />
+          <Property Name="Icon" Type="nvarchar" MaxLength="10" />
+          <Property Name="DisplayOrder" Type="int" />
+          <Property Name="IsActive" Type="bit" />
+          <Property Name="CreatedAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="HabitCategories">
+          <Key>
+            <PropertyRef Name="HabitCategoryId" />
+          </Key>
+          <Property Name="HabitCategoryId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="HabitId" Type="int" Nullable="false" />
+          <Property Name="CategoryId" Type="int" Nullable="false" />
+          <Property Name="AssignedAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="HabitRecords">
+          <Key>
+            <PropertyRef Name="RecordId" />
+          </Key>
+          <Property Name="RecordId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="HabitId" Type="int" Nullable="false" />
+          <Property Name="RecordDate" Type="date" Nullable="false" />
+          <Property Name="StatusId" Type="int" Nullable="false" />
+          <Property Name="Note" Type="nvarchar" MaxLength="200" />
+          <Property Name="UpdatedAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="Habits">
+          <Key>
+            <PropertyRef Name="HabitId" />
+          </Key>
+          <Property Name="HabitId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserId" Type="int" Nullable="false" />
+          <Property Name="HabitName" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="Description" Type="nvarchar" MaxLength="500" />
+          <Property Name="CreatedAt" Type="date" />
+          <Property Name="IsActive" Type="bit" />
+          <Property Name="ColorCode" Type="nvarchar" MaxLength="7" />
+          <Property Name="IconEmoji" Type="nvarchar" MaxLength="10" />
+        </EntityType>
+        <EntityType Name="Statuses">
+          <Key>
+            <PropertyRef Name="StatusId" />
+          </Key>
+          <Property Name="StatusId" Type="int" Nullable="false" />
+          <Property Name="StatusName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="StatusCode" Type="nvarchar" MaxLength="20" Nullable="false" />
+          <Property Name="DisplaySymbol" Type="nvarchar" MaxLength="10" />
+        </EntityType>
+        <EntityType Name="Users">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserName" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="Email" Type="nvarchar" MaxLength="255" />
+          <Property Name="CreatedAt" Type="datetime" />
+          <Property Name="IsActive" Type="bit" />
+          <Property Name="PasswordHash" Type="nvarchar" MaxLength="255" Nullable="false" />
+        </EntityType>
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6002: В таблице или представлении "HabitTracker.dbo.vwCurrentStreaks" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
+        <EntityType Name="vwCurrentStreaks">
+          <Key>
+            <PropertyRef Name="HabitId" />
+          </Key>
+          <Property Name="HabitId" Type="int" Nullable="false" />
+          <Property Name="CurrentStreak" Type="int" />
+        </EntityType>
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6013: Первичный ключ в таблице или представлении "HabitTracker.dbo.vwCurrentWeek" не определен, его не удалось вывести. Эта таблица или представление исключены. Чтобы использовать сущность, необходимо проверить схему, добавить правильные ключи и раскомментировать ее.
+        <EntityType Name="vwCurrentWeek">
+          <Property Name="Date" Type="date" />
+          <Property Name="DayName" Type="nvarchar" MaxLength="2" />
+          <Property Name="DayOfWeek" Type="int" />
+        </EntityType>-->
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6002: В таблице или представлении "HabitTracker.dbo.vwDailyStats" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
+        <EntityType Name="vwDailyStats">
+          <Key>
+            <PropertyRef Name="HabitId" />
+            <PropertyRef Name="HabitName" />
+            <PropertyRef Name="RecordDate" />
+            <PropertyRef Name="StatusId" />
+            <PropertyRef Name="StatusName" />
+            <PropertyRef Name="IsCompleted" />
+          </Key>
+          <Property Name="HabitId" Type="int" Nullable="false" />
+          <Property Name="HabitName" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="RecordDate" Type="date" Nullable="false" />
+          <Property Name="Year" Type="int" />
+          <Property Name="Month" Type="int" />
+          <Property Name="WeekNumber" Type="int" />
+          <Property Name="WeekDay" Type="int" />
+          <Property Name="StatusId" Type="int" Nullable="false" />
+          <Property Name="StatusName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="IsCompleted" Type="int" Nullable="false" />
+        </EntityType>
+        <!--Ошибки, обнаруженные при создании:
+предупреждение 6002: В таблице или представлении "HabitTracker.dbo.vwWeeklyHabitStats" не определен первичный ключ. Ключ был выведен, а определение таблицы или представления было создано в режиме только для чтения.-->
+        <EntityType Name="vwWeeklyHabitStats">
+          <Key>
+            <PropertyRef Name="HabitId" />
+            <PropertyRef Name="HabitName" />
+            <PropertyRef Name="StatusId" />
+            <PropertyRef Name="IsCompleted" />
+          </Key>
+          <Property Name="HabitId" Type="int" Nullable="false" />
+          <Property Name="HabitName" Type="nvarchar" MaxLength="200" Nullable="false" />
+          <Property Name="Date" Type="date" />
+          <Property Name="DayName" Type="nvarchar" MaxLength="2" />
+          <Property Name="DayOfWeek" Type="int" />
+          <Property Name="StatusId" Type="int" Nullable="false" />
+          <Property Name="StatusName" Type="nvarchar" MaxLength="50" />
+          <Property Name="DisplaySymbol" Type="nvarchar" MaxLength="10" />
+          <Property Name="IsCompleted" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Categories_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Categories" Type="Self.Categories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Categories">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitCategories_Categories">
+          <End Role="Categories" Type="Self.Categories" Multiplicity="1" />
+          <End Role="HabitCategories" Type="Self.HabitCategories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Categories">
+              <PropertyRef Name="CategoryId" />
+            </Principal>
+            <Dependent Role="HabitCategories">
+              <PropertyRef Name="CategoryId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitCategories_Habits">
+          <End Role="Habits" Type="Self.Habits" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="HabitCategories" Type="Self.HabitCategories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Habits">
+              <PropertyRef Name="HabitId" />
+            </Principal>
+            <Dependent Role="HabitCategories">
+              <PropertyRef Name="HabitId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitRecords_Habits">
+          <End Role="Habits" Type="Self.Habits" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="HabitRecords" Type="Self.HabitRecords" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Habits">
+              <PropertyRef Name="HabitId" />
+            </Principal>
+            <Dependent Role="HabitRecords">
+              <PropertyRef Name="HabitId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitRecords_Statuses">
+          <End Role="Statuses" Type="Self.Statuses" Multiplicity="1" />
+          <End Role="HabitRecords" Type="Self.HabitRecords" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Statuses">
+              <PropertyRef Name="StatusId" />
+            </Principal>
+            <Dependent Role="HabitRecords">
+              <PropertyRef Name="StatusId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Habits_Users">
+          <End Role="Users" Type="Self.Users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Habits" Type="Self.Habits" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Habits">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Function Name="sp_GetHabitStatsByPeriod" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="HabitId" Type="int" Mode="In" />
+          <Parameter Name="StartDate" Type="date" Mode="In" />
+          <Parameter Name="EndDate" Type="date" Mode="In" />
+        </Function>
+        <Function Name="sp_GetMaxStreak" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="HabitId" Type="int" Mode="In" />
+        </Function>
+        <Function Name="sp_UpsertHabitRecord" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="dbo">
+          <Parameter Name="HabitId" Type="int" Mode="In" />
+          <Parameter Name="RecordDate" Type="date" Mode="In" />
+          <Parameter Name="StatusId" Type="int" Mode="In" />
+          <Parameter Name="Note" Type="nvarchar" Mode="In" />
+        </Function>
+        <EntityContainer Name="Хранилище HabitTrackerModelContainer">
+          <EntitySet Name="Categories" EntityType="Self.Categories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="HabitCategories" EntityType="Self.HabitCategories" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="HabitRecords" EntityType="Self.HabitRecords" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Habits" EntityType="Self.Habits" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Statuses" EntityType="Self.Statuses" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="vwCurrentStreaks" EntityType="Self.vwCurrentStreaks" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vwCurrentStreaks].[HabitId] AS [HabitId], 
+    [vwCurrentStreaks].[CurrentStreak] AS [CurrentStreak]
+    FROM [dbo].[vwCurrentStreaks] AS [vwCurrentStreaks]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vwDailyStats" EntityType="Self.vwDailyStats" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vwDailyStats].[HabitId] AS [HabitId], 
+    [vwDailyStats].[HabitName] AS [HabitName], 
+    [vwDailyStats].[RecordDate] AS [RecordDate], 
+    [vwDailyStats].[Year] AS [Year], 
+    [vwDailyStats].[Month] AS [Month], 
+    [vwDailyStats].[WeekNumber] AS [WeekNumber], 
+    [vwDailyStats].[WeekDay] AS [WeekDay], 
+    [vwDailyStats].[StatusId] AS [StatusId], 
+    [vwDailyStats].[StatusName] AS [StatusName], 
+    [vwDailyStats].[IsCompleted] AS [IsCompleted]
+    FROM [dbo].[vwDailyStats] AS [vwDailyStats]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="vwWeeklyHabitStats" EntityType="Self.vwWeeklyHabitStats" store:Type="Views" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [vwWeeklyHabitStats].[HabitId] AS [HabitId], 
+    [vwWeeklyHabitStats].[HabitName] AS [HabitName], 
+    [vwWeeklyHabitStats].[Date] AS [Date], 
+    [vwWeeklyHabitStats].[DayName] AS [DayName], 
+    [vwWeeklyHabitStats].[DayOfWeek] AS [DayOfWeek], 
+    [vwWeeklyHabitStats].[StatusId] AS [StatusId], 
+    [vwWeeklyHabitStats].[StatusName] AS [StatusName], 
+    [vwWeeklyHabitStats].[DisplaySymbol] AS [DisplaySymbol], 
+    [vwWeeklyHabitStats].[IsCompleted] AS [IsCompleted]
+    FROM [dbo].[vwWeeklyHabitStats] AS [vwWeeklyHabitStats]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_Categories_Users" Association="Self.FK_Categories_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Categories" EntitySet="Categories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitCategories_Categories" Association="Self.FK_HabitCategories_Categories">
+            <End Role="Categories" EntitySet="Categories" />
+            <End Role="HabitCategories" EntitySet="HabitCategories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitCategories_Habits" Association="Self.FK_HabitCategories_Habits">
+            <End Role="Habits" EntitySet="Habits" />
+            <End Role="HabitCategories" EntitySet="HabitCategories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitRecords_Habits" Association="Self.FK_HabitRecords_Habits">
+            <End Role="Habits" EntitySet="Habits" />
+            <End Role="HabitRecords" EntitySet="HabitRecords" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitRecords_Statuses" Association="Self.FK_HabitRecords_Statuses">
+            <End Role="Statuses" EntitySet="Statuses" />
+            <End Role="HabitRecords" EntitySet="HabitRecords" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Habits_Users" Association="Self.FK_Habits_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Habits" EntitySet="Habits" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="HabitTrackerModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="HabitTrackerEntities" annotation:LazyLoadingEnabled="true">
+          <FunctionImport Name="sp_GetHabitStatsByPeriod" ReturnType="Collection(HabitTrackerModel.sp_GetHabitStatsByPeriod_Result)">
+            <Parameter Name="HabitId" Mode="In" Type="Int32" />
+            <Parameter Name="StartDate" Mode="In" Type="DateTime" />
+            <Parameter Name="EndDate" Mode="In" Type="DateTime" />
+          </FunctionImport>
+          <FunctionImport Name="sp_GetMaxStreak" ReturnType="Collection(Int32)">
+          <Parameter Name="HabitId" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="sp_UpsertHabitRecord">
+            <Parameter Name="HabitId" Mode="In" Type="Int32" />
+            <Parameter Name="RecordDate" Mode="In" Type="DateTime" />
+            <Parameter Name="StatusId" Mode="In" Type="Int32" />
+            <Parameter Name="Note" Mode="In" Type="String" />
+          </FunctionImport>
+          <EntitySet Name="Categories" EntityType="HabitTrackerModel.Categories" />
+          <EntitySet Name="HabitCategories" EntityType="HabitTrackerModel.HabitCategories" />
+          <EntitySet Name="HabitRecords" EntityType="HabitTrackerModel.HabitRecords" />
+          <EntitySet Name="Habits" EntityType="HabitTrackerModel.Habits" />
+          <EntitySet Name="Statuses" EntityType="HabitTrackerModel.Statuses" />
+          <EntitySet Name="Users" EntityType="HabitTrackerModel.Users" />
+          <EntitySet Name="vwCurrentStreaks" EntityType="HabitTrackerModel.vwCurrentStreaks" />
+          <EntitySet Name="vwDailyStats" EntityType="HabitTrackerModel.vwDailyStats" />
+          <EntitySet Name="vwWeeklyHabitStats" EntityType="HabitTrackerModel.vwWeeklyHabitStats" />
+          <AssociationSet Name="FK_Categories_Users" Association="HabitTrackerModel.FK_Categories_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Categories" EntitySet="Categories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitCategories_Categories" Association="HabitTrackerModel.FK_HabitCategories_Categories">
+            <End Role="Categories" EntitySet="Categories" />
+            <End Role="HabitCategories" EntitySet="HabitCategories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitCategories_Habits" Association="HabitTrackerModel.FK_HabitCategories_Habits">
+            <End Role="Habits" EntitySet="Habits" />
+            <End Role="HabitCategories" EntitySet="HabitCategories" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitRecords_Habits" Association="HabitTrackerModel.FK_HabitRecords_Habits">
+            <End Role="Habits" EntitySet="Habits" />
+            <End Role="HabitRecords" EntitySet="HabitRecords" />
+          </AssociationSet>
+          <AssociationSet Name="FK_HabitRecords_Statuses" Association="HabitTrackerModel.FK_HabitRecords_Statuses">
+            <End Role="Statuses" EntitySet="Statuses" />
+            <End Role="HabitRecords" EntitySet="HabitRecords" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Habits_Users" Association="HabitTrackerModel.FK_Habits_Users">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Habits" EntitySet="Habits" />
+          </AssociationSet>
+          </EntityContainer>
+        <ComplexType Name="sp_GetHabitStatsByPeriod_Result">
+          <Property Type="DateTime" Name="RecordDate" Nullable="false" />
+          <Property Type="Int32" Name="StatusId" Nullable="false" />
+          <Property Type="String" Name="Note" Nullable="true" MaxLength="200" />
+          <Property Type="Int32" Name="IsStreakContinued" Nullable="false" />
+        </ComplexType>
+        <EntityType Name="Categories">
+          <Key>
+            <PropertyRef Name="CategoryId" />
+          </Key>
+          <Property Name="CategoryId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CategoryName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="Color" Type="String" MaxLength="7" FixedLength="false" Unicode="true" />
+          <Property Name="Icon" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="DisplayOrder" Type="Int32" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="CreatedAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Users" Relationship="HabitTrackerModel.FK_Categories_Users" FromRole="Categories" ToRole="Users" />
+          <NavigationProperty Name="HabitCategories" Relationship="HabitTrackerModel.FK_HabitCategories_Categories" FromRole="Categories" ToRole="HabitCategories" />
+        </EntityType>
+        <EntityType Name="HabitCategories">
+          <Key>
+            <PropertyRef Name="HabitCategoryId" />
+          </Key>
+          <Property Name="HabitCategoryId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="HabitId" Type="Int32" Nullable="false" />
+          <Property Name="CategoryId" Type="Int32" Nullable="false" />
+          <Property Name="AssignedAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Categories" Relationship="HabitTrackerModel.FK_HabitCategories_Categories" FromRole="HabitCategories" ToRole="Categories" />
+          <NavigationProperty Name="Habits" Relationship="HabitTrackerModel.FK_HabitCategories_Habits" FromRole="HabitCategories" ToRole="Habits" />
+        </EntityType>
+        <EntityType Name="HabitRecords">
+          <Key>
+            <PropertyRef Name="RecordId" />
+          </Key>
+          <Property Name="RecordId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="HabitId" Type="Int32" Nullable="false" />
+          <Property Name="RecordDate" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="StatusId" Type="Int32" Nullable="false" />
+          <Property Name="Note" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="UpdatedAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Habits" Relationship="HabitTrackerModel.FK_HabitRecords_Habits" FromRole="HabitRecords" ToRole="Habits" />
+          <NavigationProperty Name="Statuses" Relationship="HabitTrackerModel.FK_HabitRecords_Statuses" FromRole="HabitRecords" ToRole="Statuses" />
+        </EntityType>
+        <EntityType Name="Habits">
+          <Key>
+            <PropertyRef Name="HabitId" />
+          </Key>
+          <Property Name="HabitId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="HabitName" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="CreatedAt" Type="DateTime" Precision="0" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="ColorCode" Type="String" MaxLength="7" FixedLength="false" Unicode="true" />
+          <Property Name="IconEmoji" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="HabitCategories" Relationship="HabitTrackerModel.FK_HabitCategories_Habits" FromRole="Habits" ToRole="HabitCategories" />
+          <NavigationProperty Name="HabitRecords" Relationship="HabitTrackerModel.FK_HabitRecords_Habits" FromRole="Habits" ToRole="HabitRecords" />
+          <NavigationProperty Name="Users" Relationship="HabitTrackerModel.FK_Habits_Users" FromRole="Habits" ToRole="Users" />
+        </EntityType>
+        <EntityType Name="Statuses">
+          <Key>
+            <PropertyRef Name="StatusId" />
+          </Key>
+          <Property Name="StatusId" Type="Int32" Nullable="false" />
+          <Property Name="StatusName" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="StatusCode" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="true" />
+          <Property Name="DisplaySymbol" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="HabitRecords" Relationship="HabitTrackerModel.FK_HabitRecords_Statuses" FromRole="Statuses" ToRole="HabitRecords" />
+        </EntityType>
+        <EntityType Name="Users">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserName" Type="String" Nullable="false" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CreatedAt" Type="DateTime" Precision="3" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="PasswordHash" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="Categories" Relationship="HabitTrackerModel.FK_Categories_Users" FromRole="Users" ToRole="Categories" />
+          <NavigationProperty Name="Habits" Relationship="HabitTrackerModel.FK_Habits_Users" FromRole="Users" ToRole="Habits" />
+        </EntityType>
+        <EntityType Name="vwCurrentStreaks">
+          <Key>
+            <PropertyRef Name="HabitId" />
+          </Key>
+          <Property Name="HabitId" Type="Int32" Nullable="false" />
+          <Property Name="CurrentStreak" Type="Int32" />
+        </EntityType>
+        <EntityType Name="vwDailyStats">
+          <Key>
+            <PropertyRef Name="HabitId" />
+            <PropertyRef Name="HabitName" />
+            <PropertyRef Name="RecordDate" />
+            <PropertyRef Name="StatusId" />
+            <PropertyRef Name="StatusName" />
+            <PropertyRef Name="IsCompleted" />
+          </Key>
+          <Property Name="HabitId" Type="Int32" Nullable="false" />
+          <Property Name="HabitName" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="RecordDate" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="Year" Type="Int32" />
+          <Property Name="Month" Type="Int32" />
+          <Property Name="WeekNumber" Type="Int32" />
+          <Property Name="WeekDay" Type="Int32" />
+          <Property Name="StatusId" Type="Int32" Nullable="false" />
+          <Property Name="StatusName" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="IsCompleted" Type="Int32" Nullable="false" />
+        </EntityType>
+        <EntityType Name="vwWeeklyHabitStats">
+          <Key>
+            <PropertyRef Name="HabitId" />
+            <PropertyRef Name="HabitName" />
+            <PropertyRef Name="StatusId" />
+            <PropertyRef Name="IsCompleted" />
+          </Key>
+          <Property Name="HabitId" Type="Int32" Nullable="false" />
+          <Property Name="HabitName" Type="String" Nullable="false" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="Date" Type="DateTime" Precision="0" />
+          <Property Name="DayName" Type="String" MaxLength="2" FixedLength="false" Unicode="true" />
+          <Property Name="DayOfWeek" Type="Int32" />
+          <Property Name="StatusId" Type="Int32" Nullable="false" />
+          <Property Name="StatusName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="DisplaySymbol" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="IsCompleted" Type="Int32" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Categories_Users">
+          <End Type="HabitTrackerModel.Users" Role="Users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="HabitTrackerModel.Categories" Role="Categories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Categories">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitCategories_Categories">
+          <End Type="HabitTrackerModel.Categories" Role="Categories" Multiplicity="1" />
+          <End Type="HabitTrackerModel.HabitCategories" Role="HabitCategories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Categories">
+              <PropertyRef Name="CategoryId" />
+            </Principal>
+            <Dependent Role="HabitCategories">
+              <PropertyRef Name="CategoryId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitCategories_Habits">
+          <End Type="HabitTrackerModel.Habits" Role="Habits" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="HabitTrackerModel.HabitCategories" Role="HabitCategories" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Habits">
+              <PropertyRef Name="HabitId" />
+            </Principal>
+            <Dependent Role="HabitCategories">
+              <PropertyRef Name="HabitId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitRecords_Habits">
+          <End Type="HabitTrackerModel.Habits" Role="Habits" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="HabitTrackerModel.HabitRecords" Role="HabitRecords" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Habits">
+              <PropertyRef Name="HabitId" />
+            </Principal>
+            <Dependent Role="HabitRecords">
+              <PropertyRef Name="HabitId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_HabitRecords_Statuses">
+          <End Type="HabitTrackerModel.Statuses" Role="Statuses" Multiplicity="1" />
+          <End Type="HabitTrackerModel.HabitRecords" Role="HabitRecords" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Statuses">
+              <PropertyRef Name="StatusId" />
+            </Principal>
+            <Dependent Role="HabitRecords">
+              <PropertyRef Name="StatusId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Habits_Users">
+          <End Type="HabitTrackerModel.Users" Role="Users" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="HabitTrackerModel.Habits" Role="Habits" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Habits">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="Хранилище HabitTrackerModelContainer" CdmEntityContainer="HabitTrackerEntities">
+          <FunctionImportMapping FunctionImportName="sp_GetHabitStatsByPeriod" FunctionName="Хранилище HabitTrackerModel.sp_GetHabitStatsByPeriod">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="HabitTrackerModel.sp_GetHabitStatsByPeriod_Result">
+                <ScalarProperty Name="RecordDate" ColumnName="RecordDate" />
+                <ScalarProperty Name="StatusId" ColumnName="StatusId" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="IsStreakContinued" ColumnName="IsStreakContinued" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="sp_GetMaxStreak" FunctionName="Хранилище HabitTrackerModel.sp_GetMaxStreak" />
+          <FunctionImportMapping FunctionImportName="sp_UpsertHabitRecord" FunctionName="Хранилище HabitTrackerModel.sp_UpsertHabitRecord" />
+          <EntitySetMapping Name="Categories">
+            <EntityTypeMapping TypeName="HabitTrackerModel.Categories">
+              <MappingFragment StoreEntitySet="Categories">
+                <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="DisplayOrder" ColumnName="DisplayOrder" />
+                <ScalarProperty Name="Icon" ColumnName="Icon" />
+                <ScalarProperty Name="Color" ColumnName="Color" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="CategoryName" ColumnName="CategoryName" />
+                <ScalarProperty Name="CategoryId" ColumnName="CategoryId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="HabitCategories">
+            <EntityTypeMapping TypeName="HabitTrackerModel.HabitCategories">
+              <MappingFragment StoreEntitySet="HabitCategories">
+                <ScalarProperty Name="AssignedAt" ColumnName="AssignedAt" />
+                <ScalarProperty Name="CategoryId" ColumnName="CategoryId" />
+                <ScalarProperty Name="HabitId" ColumnName="HabitId" />
+                <ScalarProperty Name="HabitCategoryId" ColumnName="HabitCategoryId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="HabitRecords">
+            <EntityTypeMapping TypeName="HabitTrackerModel.HabitRecords">
+              <MappingFragment StoreEntitySet="HabitRecords">
+                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="StatusId" ColumnName="StatusId" />
+                <ScalarProperty Name="RecordDate" ColumnName="RecordDate" />
+                <ScalarProperty Name="HabitId" ColumnName="HabitId" />
+                <ScalarProperty Name="RecordId" ColumnName="RecordId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Habits">
+            <EntityTypeMapping TypeName="HabitTrackerModel.Habits">
+              <MappingFragment StoreEntitySet="Habits">
+                <ScalarProperty Name="IconEmoji" ColumnName="IconEmoji" />
+                <ScalarProperty Name="ColorCode" ColumnName="ColorCode" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="HabitName" ColumnName="HabitName" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="HabitId" ColumnName="HabitId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Statuses">
+            <EntityTypeMapping TypeName="HabitTrackerModel.Statuses">
+              <MappingFragment StoreEntitySet="Statuses">
+                <ScalarProperty Name="DisplaySymbol" ColumnName="DisplaySymbol" />
+                <ScalarProperty Name="StatusCode" ColumnName="StatusCode" />
+                <ScalarProperty Name="StatusName" ColumnName="StatusName" />
+                <ScalarProperty Name="StatusId" ColumnName="StatusId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Users">
+            <EntityTypeMapping TypeName="HabitTrackerModel.Users">
+              <MappingFragment StoreEntitySet="Users">
+                <ScalarProperty Name="PasswordHash" ColumnName="PasswordHash" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="UserName" ColumnName="UserName" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vwCurrentStreaks">
+            <EntityTypeMapping TypeName="HabitTrackerModel.vwCurrentStreaks">
+              <MappingFragment StoreEntitySet="vwCurrentStreaks">
+                <ScalarProperty Name="CurrentStreak" ColumnName="CurrentStreak" />
+                <ScalarProperty Name="HabitId" ColumnName="HabitId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vwDailyStats">
+            <EntityTypeMapping TypeName="HabitTrackerModel.vwDailyStats">
+              <MappingFragment StoreEntitySet="vwDailyStats">
+                <ScalarProperty Name="IsCompleted" ColumnName="IsCompleted" />
+                <ScalarProperty Name="StatusName" ColumnName="StatusName" />
+                <ScalarProperty Name="StatusId" ColumnName="StatusId" />
+                <ScalarProperty Name="WeekDay" ColumnName="WeekDay" />
+                <ScalarProperty Name="WeekNumber" ColumnName="WeekNumber" />
+                <ScalarProperty Name="Month" ColumnName="Month" />
+                <ScalarProperty Name="Year" ColumnName="Year" />
+                <ScalarProperty Name="RecordDate" ColumnName="RecordDate" />
+                <ScalarProperty Name="HabitName" ColumnName="HabitName" />
+                <ScalarProperty Name="HabitId" ColumnName="HabitId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="vwWeeklyHabitStats">
+            <EntityTypeMapping TypeName="HabitTrackerModel.vwWeeklyHabitStats">
+              <MappingFragment StoreEntitySet="vwWeeklyHabitStats">
+                <ScalarProperty Name="IsCompleted" ColumnName="IsCompleted" />
+                <ScalarProperty Name="DisplaySymbol" ColumnName="DisplaySymbol" />
+                <ScalarProperty Name="StatusName" ColumnName="StatusName" />
+                <ScalarProperty Name="StatusId" ColumnName="StatusId" />
+                <ScalarProperty Name="DayOfWeek" ColumnName="DayOfWeek" />
+                <ScalarProperty Name="DayName" ColumnName="DayName" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
+                <ScalarProperty Name="HabitName" ColumnName="HabitName" />
+                <ScalarProperty Name="HabitId" ColumnName="HabitId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Нет" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

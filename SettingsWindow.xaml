@@ -1,0 +1,685 @@
+﻿<Window x:Class="HabitFlow.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HabitFlow"
+        mc:Ignorable="d"
+        Title="Настройки приложения"
+        Height="900" Width="1000"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+
+    <Border CornerRadius="20" Background="#F5F7FA" Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#33000000" Opacity="0.3"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="80"/>
+            </Grid.RowDefinitions>
+
+            <!-- ==================== ВЕРХНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="0" Background="White" CornerRadius="20,20,0,0" Padding="25,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Заголовок -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⚙️" FontSize="28" Margin="0,0,10,0"/>
+                        <TextBlock Text="Настройки приложения" FontSize="24" FontWeight="SemiBold" Foreground="#333"/>
+                    </StackPanel>
+
+                    <!-- Статус сохранения -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border x:Name="borderSaveStatus" Background="#4CAF5020" CornerRadius="15" Padding="15,5" Visibility="Collapsed">
+                            <TextBlock x:Name="txtSaveStatus" Text="✅ Настройки сохранены" Foreground="#4CAF50" FontSize="12"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Кнопки управления -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="btnMinimize" Content="─" Width="35" Height="35" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button x:Name="btnClose" Content="✕" Width="35" Height="35" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ==================== ОСНОВНОЙ КОНТЕНТ ==================== -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid Margin="25">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- ===== БЛОК 1: Оформление и тема ===== -->
+                    <Border Grid.Row="0" Background="White" CornerRadius="15" Padding="25">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="🎨 Оформление" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                       Margin="0,0,0,20"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Тема оформления -->
+                                <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Тема" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbTheme" 
+                                                  Height="40" FontSize="14"
+                                                  SelectionChanged="Setting_Changed"
+                                                  Margin="0,0,0,10">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Светлая" Tag="Light" IsSelected="True"/>
+                                            <ComboBoxItem Content="Темная" Tag="Dark"/>
+                                            <ComboBoxItem Content="Системная (по умолчанию)" Tag="System"/>
+                                        </ComboBox>
+
+                                        <TextBlock Grid.Row="2" Text="Выберите оформление интерфейса" 
+                                                   FontSize="11" Foreground="#999" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Цветовая схема -->
+                                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Акцентный цвет" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbAccentColor" 
+                                                  Height="40" FontSize="14"
+                                                  SelectionChanged="Setting_Changed"
+                                                  Margin="0,0,0,10">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Зеленый (по умолчанию)" Tag="#4CAF50" IsSelected="True"/>
+                                            <ComboBoxItem Content="Синий" Tag="#3498DB"/>
+                                            <ComboBoxItem Content="Фиолетовый" Tag="#9B59B6"/>
+                                            <ComboBoxItem Content="Оранжевый" Tag="#F39C12"/>
+                                            <ComboBoxItem Content="Красный" Tag="#E74C3C"/>
+                                            <ComboBoxItem Content="Бирюзовый" Tag="#1ABC9C"/>
+                                        </ComboBox>
+
+                                        <!-- Предпросмотр цвета -->
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                            <TextBlock Text="Предпросмотр: " FontSize="11" Foreground="#999" VerticalAlignment="Center"/>
+                                            <Border x:Name="colorPreview" Width="40" Height="20" CornerRadius="4" Background="#4CAF50" Margin="5,0,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Размер шрифта -->
+                                <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10,0,0,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Размер шрифта" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbFontSize" 
+                                                  Height="40" FontSize="14"
+                                                  SelectionChanged="Setting_Changed"
+                                                  Margin="0,0,0,10">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Маленький" Tag="Small"/>
+                                            <ComboBoxItem Content="Средний (по умолчанию)" Tag="Medium" IsSelected="True"/>
+                                            <ComboBoxItem Content="Большой" Tag="Large"/>
+                                        </ComboBox>
+
+                                        <TextBlock Grid.Row="2" Text="Влияет на размер текста в интерфейсе" 
+                                                   FontSize="11" Foreground="#999" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- ===== БЛОК 2: Отображение и календарь ===== -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="15" Padding="25">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="📅 Отображение и календарь" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                       Margin="0,0,0,20"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Настройки недели -->
+                                <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Неделя" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <CheckBox Grid.Row="1" x:Name="chkMondayFirst" 
+                                                  Content="Понедельник - первый день недели" 
+                                                  Margin="0,0,0,10"
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"
+                                                  IsChecked="True"/>
+
+                                        <CheckBox Grid.Row="2" x:Name="chkShowWeekends" 
+                                                  Content="Показывать выходные" 
+                                                  Margin="0,0,0,10"
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"
+                                                  IsChecked="True"/>
+
+                                        <CheckBox Grid.Row="3" x:Name="chkCompactWeekView" 
+                                                  Content="Компактный вид недели" 
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Формат дат -->
+                                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10,0,0,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Формат даты и времени" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbDateFormat" 
+                                                  Height="35" FontSize="13"
+                                                  SelectionChanged="Setting_Changed"
+                                                  Margin="0,0,0,10">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="ДД.ММ.ГГГГ (31.12.2024)" Tag="dd.MM.yyyy" IsSelected="True"/>
+                                            <ComboBoxItem Content="ГГГГ-ММ-ДД (2024-12-31)" Tag="yyyy-MM-dd"/>
+                                            <ComboBoxItem Content="ММ/ДД/ГГГГ (12/31/2024)" Tag="MM/dd/yyyy"/>
+                                        </ComboBox>
+
+                                        <ComboBox Grid.Row="2" x:Name="cmbTimeFormat" 
+                                                  Height="35" FontSize="13"
+                                                  SelectionChanged="Setting_Changed"
+                                                  Margin="0,0,0,5">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="24-часовой (14:30)" Tag="HH:mm" IsSelected="True"/>
+                                            <ComboBoxItem Content="12-часовой (2:30 PM)" Tag="hh:mm tt"/>
+                                        </ComboBox>
+
+                                        <TextBlock x:Name="txtDateFormatPreview" 
+                                                   Text="Пример: 19.03.2026 14:30" 
+                                                   FontSize="11" Foreground="#999" 
+                                                   HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- ===== БЛОК 3: Уведомления и напоминания ===== -->
+                    <Border Grid.Row="4" Background="White" CornerRadius="15" Padding="25">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="🔔 Уведомления и напоминания" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                       Margin="0,0,0,20"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Основные уведомления -->
+                                <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Настройки уведомлений" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <CheckBox Grid.Row="1" x:Name="chkEnableNotifications" 
+                                                  Content="Включить уведомления" 
+                                                  Margin="0,0,0,10"
+                                                  Checked="Notifications_EnabledChanged"
+                                                  Unchecked="Notifications_EnabledChanged"
+                                                  IsChecked="True"/>
+
+                                        <CheckBox Grid.Row="2" x:Name="chkDailyReminder" 
+                                                  Content="Ежедневное напоминание" 
+                                                  Margin="20,0,0,10"
+                                                  IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}"/>
+
+                                        <Grid Grid.Row="3" Margin="20,0,0,10"
+                                              IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Время:" FontSize="13" Foreground="#666" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                            <TextBox Grid.Column="1" x:Name="txtReminderTime" 
+                                                     Text="20:00" Height="30" FontSize="13" Padding="8,0"
+                                                     TextChanged="Setting_Changed">
+                                                <TextBox.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="6"/>
+                                                    </Style>
+                                                </TextBox.Resources>
+                                            </TextBox>
+                                        </Grid>
+
+                                        <CheckBox Grid.Row="4" x:Name="chkStreakNotifications" 
+                                                  Content="Уведомлять о новых рекордах" 
+                                                  Margin="20,0,0,0"
+                                                  IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}"
+                                                  IsChecked="True"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Звуки -->
+                                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10,0,0,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Звуки" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <CheckBox Grid.Row="1" x:Name="chkEnableSounds" 
+                                                  Content="Включить звуки" 
+                                                  Margin="0,0,0,10"
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"
+                                                  IsChecked="True"/>
+
+                                        <CheckBox Grid.Row="2" x:Name="chkSoundOnComplete" 
+                                                  Content="Звук при выполнении привычки" 
+                                                  Margin="20,0,0,10"
+                                                  IsEnabled="{Binding ElementName=chkEnableSounds, Path=IsChecked}"
+                                                  IsChecked="True"/>
+
+                                        <CheckBox Grid.Row="3" x:Name="chkSoundOnReminder" 
+                                                  Content="Звук напоминания" 
+                                                  Margin="20,0,0,0"
+                                                  IsEnabled="{Binding ElementName=chkEnableSounds, Path=IsChecked}"
+                                                  IsChecked="True"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- ===== БЛОК 4: Данные и резервное копирование ===== -->
+                    <Border Grid.Row="6" Background="White" CornerRadius="15" Padding="25">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="💾 Данные и резервное копирование" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                       Margin="0,0,0,20"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Автосохранение -->
+                                <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Автоматическое сохранение" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <CheckBox Grid.Row="1" x:Name="chkAutoSave" 
+                                                  Content="Автосохранение после каждого действия" 
+                                                  Margin="0,0,0,10"
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"
+                                                  IsChecked="True"/>
+
+                                        <ComboBox Grid.Row="2" x:Name="cmbBackupFrequency" 
+                                                  Height="35" FontSize="13"
+                                                  SelectionChanged="Setting_Changed"
+                                                  IsEnabled="{Binding ElementName=chkAutoSave, Path=IsChecked}">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Сразу после изменения" Tag="Instant" IsSelected="True"/>
+                                            <ComboBoxItem Content="Каждые 5 минут" Tag="5min"/>
+                                            <ComboBoxItem Content="Каждые 15 минут" Tag="15min"/>
+                                            <ComboBoxItem Content="Каждые 30 минут" Tag="30min"/>
+                                            <ComboBoxItem Content="Каждый час" Tag="60min"/>
+                                        </ComboBox>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Резервное копирование -->
+                                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10,0,0,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Резервное копирование" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <Button Grid.Row="1" x:Name="btnBackupNow" 
+                                                Content="📦 Создать резервную копию" 
+                                                Height="35" Margin="0,0,0,10"
+                                                Background="#3498DB" Foreground="White"
+                                                BorderBrush="Transparent"
+                                                Cursor="Hand" FontSize="12"
+                                                Click="btnBackupNow_Click"/>
+
+                                        <Button Grid.Row="2" x:Name="btnRestoreBackup" 
+                                                Content="📂 Восстановить из копии" 
+                                                Height="35" Margin="0,0,0,10"
+                                                Background="#F39C12" Foreground="White"
+                                                BorderBrush="Transparent"
+                                                Cursor="Hand" FontSize="12"
+                                                Click="btnRestoreBackup_Click"/>
+
+                                        <TextBlock Grid.Row="3" x:Name="txtLastBackup" 
+                                                   Text="Последняя копия: никогда" 
+                                                   FontSize="11" Foreground="#999" 
+                                                   HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- ===== БЛОК 5: Дополнительные настройки ===== -->
+                    <Border Grid.Row="8" Background="White" CornerRadius="15" Padding="25">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="🛠️ Дополнительные настройки" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                       Margin="0,0,0,20"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Язык -->
+                                <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="0,0,10,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Язык интерфейса" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbLanguage" 
+                                                  Height="35" FontSize="13"
+                                                  SelectionChanged="Setting_Changed">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="8"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Русский" Tag="ru" IsSelected="True"/>
+                                            <ComboBoxItem Content="English" Tag="en"/>
+                                            <ComboBoxItem Content="Қазақша" Tag="kk"/>
+                                        </ComboBox>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Запуск -->
+                                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Запуск приложения" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <CheckBox Grid.Row="1" x:Name="chkRunOnStartup" 
+                                                  Content="Запускать при Windows" 
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Сброс -->
+                                <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="10" Padding="20" Margin="10,0,0,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="Сброс настроек" 
+                                                   FontSize="14" FontWeight="SemiBold" Foreground="#333" 
+                                                   Margin="0,0,0,15"/>
+
+                                        <Button Grid.Row="1" x:Name="btnResetToDefault" 
+                                                Content="🔄 Сбросить настройки" 
+                                                Height="35" Margin="0,0,0,10"
+                                                Background="#E74C3C" Foreground="White"
+                                                BorderBrush="Transparent"
+                                                Cursor="Hand" FontSize="12"
+                                                Click="btnResetToDefault_Click"/>
+
+                                        <Button Grid.Row="2" x:Name="btnClearAllData" 
+                                                Content="⚠️ Очистить все данные" 
+                                                Height="35"
+                                                Background="Transparent" 
+                                                BorderBrush="#E74C3C" BorderThickness="1"
+                                                Foreground="#E74C3C"
+                                                Cursor="Hand" FontSize="12"
+                                                Click="btnClearAllData_Click"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- ==================== НИЖНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="2" Background="White" CornerRadius="0,0,20,20" Padding="25,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Информация -->
+                    <TextBlock Grid.Column="0" x:Name="txtSettingsInfo" 
+                               Text="Изменения вступают в силу после перезапуска" 
+                               Foreground="#F39C12" VerticalAlignment="Center"/>
+
+                    <!-- Кнопка применения -->
+                    <Button Grid.Column="1" x:Name="btnApply" 
+                            Content="Применить" 
+                            Height="40" Width="100"
+                            Background="#3498DB" Foreground="White"
+                            BorderBrush="Transparent"
+                            FontSize="14" FontWeight="SemiBold"
+                            Cursor="Hand"
+                            Click="btnApply_Click"/>
+
+                    <!-- Кнопка закрытия -->
+                    <Button Grid.Column="3" x:Name="btnBack" 
+                            Content="Закрыть" 
+                            Height="40" Width="100"
+                            Background="Transparent" 
+                            BorderBrush="#DDD" BorderThickness="1.5"
+                            Foreground="#666"
+                            Cursor="Hand"
+                            Click="btnBack_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

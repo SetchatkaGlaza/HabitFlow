@@ -1,0 +1,250 @@
+﻿<Window x:Class="HabitFlow.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HabitFlow"
+        mc:Ignorable="d"
+        Title="Вход - HabitFlow"
+        Height="750" Width="600"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Border CornerRadius="20" Background="White" Padding="30">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#33000000" Opacity="0.3"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Шапка с заголовком и кнопкой закрытия -->
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,20">
+                <TextBlock Text="HabitFlow" 
+                           FontSize="28" 
+                           FontWeight="Bold" 
+                           Foreground="#4CAF50"
+                           DockPanel.Dock="Left"/>
+                <Button x:Name="btnClose" 
+                        Content="✕" 
+                        Width="30" 
+                        Height="30"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Foreground="#999"
+                        FontSize="18"
+                        Cursor="Hand"
+                        DockPanel.Dock="Right"
+                        Click="btnClose_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="15"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </DockPanel>
+
+            <!-- Основной контент -->
+            <StackPanel Grid.Row="1" Margin="0,10,0,30">
+                <TextBlock Text="Добро пожаловать!" 
+                           FontSize="28" 
+                           FontWeight="SemiBold" 
+                           Margin="0,0,0,10"/>
+                <TextBlock Text="Войдите в свой аккаунт, чтобы продолжить" 
+                           FontSize="14" 
+                           Foreground="#666" 
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- Форма входа -->
+            <StackPanel Grid.Row="2" VerticalAlignment="Center">
+                <!-- Поле для имени пользователя или email -->
+                <TextBlock Text="Имя пользователя или Email" 
+                           FontSize="14" 
+                           Foreground="#666" 
+                           Margin="0,0,0,5"/>
+                <TextBox x:Name="txtUsernameOrEmail" 
+                         Height="45" 
+                         FontSize="16" 
+                         Padding="10,0"
+                         BorderBrush="#DDD" 
+                         BorderThickness="1"
+                         TextChanged="txtUsernameOrEmail_TextChanged"
+                         Margin="0,0,0,20">
+                    <TextBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </TextBox.Resources>
+                </TextBox>
+
+                <!-- Поле для пароля -->
+                <TextBlock Text="Пароль" 
+                           FontSize="14" 
+                           Foreground="#666" 
+                           Margin="0,0,0,5"/>
+                <PasswordBox x:Name="txtPassword" 
+                             Height="45" 
+                             FontSize="16" 
+                             Padding="10,0"
+                             BorderBrush="#DDD" 
+                             BorderThickness="1"
+                             PasswordChanged="txtPassword_PasswordChanged"
+                             Margin="0,0,0,5">
+                    <PasswordBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </PasswordBox.Resources>
+                </PasswordBox>
+
+                <!-- Ссылка "Забыли пароль?" -->
+                <Button x:Name="btnForgotPassword" 
+                        Content="Забыли пароль?" 
+                        Background="Transparent" 
+                        BorderBrush="Transparent"
+                        Foreground="#4CAF50" 
+                        FontSize="12"
+                        HorizontalAlignment="Right"
+                        Cursor="Hand"
+                        Margin="0,0,0,15"
+                        Click="btnForgotPassword_Click"/>
+
+                <!-- Блок "Запомнить меня" -->
+                <CheckBox x:Name="chkRememberMe" 
+                          Margin="0,0,0,25"
+                          VerticalAlignment="Center">
+                    <TextBlock Text="Запомнить меня" FontSize="14" Foreground="#666"/>
+                </CheckBox>
+
+                <!-- Кнопка входа -->
+                <Button x:Name="btnLogin" 
+                        Content="Войти" 
+                        Height="50" 
+                        FontSize="16" 
+                        FontWeight="SemiBold"
+                        Background="#4CAF50" 
+                        Foreground="White"
+                        BorderBrush="Transparent"
+                        Cursor="Hand"
+                        IsEnabled="False"
+                        Click="btnLogin_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.9"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#CCC"/>
+                                    <Setter Property="Foreground" Value="#666"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <!-- Разделитель -->
+                <Grid Margin="0,25,0,15">
+                    <Line X1="0" Y1="0" X2="1" Y2="0" 
+                          Stretch="Fill" 
+                          Stroke="#DDD" 
+                          StrokeThickness="1" 
+                          VerticalAlignment="Center"/>
+                    <TextBlock Text="или" 
+                               HorizontalAlignment="Center" 
+                               Background="White" 
+                               Padding="10,0" 
+                               Foreground="#999"
+                               FontSize="12"/>
+                </Grid>
+
+                <!-- Кнопка регистрации -->
+                <Button x:Name="btnRegister" 
+                        Content="Создать новый аккаунт" 
+                        Height="45" 
+                        FontSize="14"
+                        Background="Transparent" 
+                        Foreground="#4CAF50"
+                        BorderBrush="#4CAF50" 
+                        BorderThickness="1.5"
+                        Cursor="Hand"
+                        Click="btnRegister_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1A4CAF50"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+
+            <!-- Сообщение об ошибке -->
+            <Border Grid.Row="3" 
+                    x:Name="borderErrorMessage" 
+                    Background="#FEE" 
+                    CornerRadius="8"
+                    BorderBrush="#E74C3C"
+                    BorderThickness="1"
+                    Padding="10"
+                    Margin="0,20,0,0"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="⚠" 
+                               Foreground="#E74C3C" 
+                               FontSize="16" 
+                               Margin="0,0,10,0"
+                               Grid.Column="0"/>
+
+                    <TextBlock x:Name="txtErrorMessage" 
+                               Text="" 
+                               Foreground="#E74C3C" 
+                               FontSize="12" 
+                               TextWrapping="Wrap"
+                               Grid.Column="1"/>
+
+                    <Button x:Name="btnCloseError" 
+                            Content="✕" 
+                            Background="Transparent" 
+                            BorderBrush="Transparent"
+                            Foreground="#E74C3C" 
+                            FontSize="12"
+                            Cursor="Hand"
+                            Grid.Column="2"
+                            Margin="10,0,0,0"
+                            Click="btnCloseError_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,416 @@
+﻿<Window x:Class="HabitFlow.DatePickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HabitFlow"
+        mc:Ignorable="d"
+        Title="Выбор даты"
+        Height="500" Width="400"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Loaded="Window_Loaded">
+
+    <Border CornerRadius="20" Background="White" Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="#33000000" Opacity="0.4"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="80"/>
+            </Grid.RowDefinitions>
+
+            <!-- ==================== ВЕРХНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="0" Background="#4CAF50" CornerRadius="20,20,0,0" Padding="20,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Иконка -->
+                    <TextBlock Grid.Column="0" Text="📅" FontSize="28" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                    <!-- Заголовок -->
+                    <TextBlock Grid.Column="1" x:Name="txtTitle" 
+                               Text="Выберите дату" 
+                               FontSize="20" FontWeight="SemiBold" 
+                               Foreground="White" 
+                               VerticalAlignment="Center"/>
+
+                    <!-- Кнопка закрытия -->
+                    <Button Grid.Column="2" x:Name="btnClose" 
+                            Content="✕" 
+                            Width="35" Height="35"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Foreground="White"
+                            FontSize="18"
+                            Cursor="Hand"
+                            Click="btnClose_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="17.5"/>
+                            </Style>
+                        </Button.Resources>
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Opacity" Value="0.8"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1"/>
+                                        <Setter Property="Background" Value="#30FFFFFF"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- ==================== ОСНОВНОЙ КОНТЕНТ ==================== -->
+            <Grid Grid.Row="1" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Навигация по месяцам -->
+                <Border Grid.Row="0" Background="#F8F9FA" CornerRadius="10" Padding="10" Margin="0,0,0,15">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" x:Name="btnPrevMonth" 
+                                Content="◀" 
+                                Width="35" Height="35"
+                                Background="Transparent" 
+                                BorderBrush="#DDD" 
+                                BorderThickness="1"
+                                Foreground="#666"
+                                FontSize="14"
+                                Cursor="Hand"
+                                Click="btnPrevMonth_Click"
+                                ToolTip="Предыдущий месяц">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+
+                        <TextBlock Grid.Column="1" x:Name="txtCurrentMonth" 
+                                   Text="Март 2026" 
+                                   FontSize="16" FontWeight="SemiBold" 
+                                   Foreground="#333" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"/>
+
+                        <Button Grid.Column="2" x:Name="btnNextMonth" 
+                                Content="▶" 
+                                Width="35" Height="35"
+                                Background="Transparent" 
+                                BorderBrush="#DDD" 
+                                BorderThickness="1"
+                                Foreground="#666"
+                                FontSize="14"
+                                Cursor="Hand"
+                                Click="btnNextMonth_Click"
+                                ToolTip="Следующий месяц">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Календарь -->
+                <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="10" Padding="15">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Дни недели -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="ПН" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="ВТ" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="СР" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="3" Text="ЧТ" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="4" Text="ПТ" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="5" Text="СБ" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="6" Text="ВС" FontWeight="Bold" Foreground="#999" HorizontalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Сетка дней -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="CalendarGrid">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Grid.Column="0" 
+                                                    Content="{Binding Day1}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color1}" 
+                                                    Foreground="{Binding TextColor1}"
+                                                    BorderBrush="{Binding BorderColor1}"
+                                                    BorderThickness="{Binding BorderThickness1}"
+                                                    FontWeight="{Binding FontWeight1}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date1}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Grid.Column="1" 
+                                                    Content="{Binding Day2}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color2}" 
+                                                    Foreground="{Binding TextColor2}"
+                                                    BorderBrush="{Binding BorderColor2}"
+                                                    BorderThickness="{Binding BorderThickness2}"
+                                                    FontWeight="{Binding FontWeight2}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date2}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Grid.Column="2" 
+                                                    Content="{Binding Day3}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color3}" 
+                                                    Foreground="{Binding TextColor3}"
+                                                    BorderBrush="{Binding BorderColor3}"
+                                                    BorderThickness="{Binding BorderThickness3}"
+                                                    FontWeight="{Binding FontWeight3}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date3}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Grid.Column="3" 
+                                                    Content="{Binding Day4}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color4}" 
+                                                    Foreground="{Binding TextColor4}"
+                                                    BorderBrush="{Binding BorderColor4}"
+                                                    BorderThickness="{Binding BorderThickness4}"
+                                                    FontWeight="{Binding FontWeight4}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date4}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Grid.Column="4" 
+                                                    Content="{Binding Day5}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color5}" 
+                                                    Foreground="{Binding TextColor5}"
+                                                    BorderBrush="{Binding BorderColor5}"
+                                                    BorderThickness="{Binding BorderThickness5}"
+                                                    FontWeight="{Binding FontWeight5}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date5}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Grid.Column="5" 
+                                                    Content="{Binding Day6}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color6}" 
+                                                    Foreground="{Binding TextColor6}"
+                                                    BorderBrush="{Binding BorderColor6}"
+                                                    BorderThickness="{Binding BorderThickness6}"
+                                                    FontWeight="{Binding FontWeight6}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date6}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+
+                                            <Button Grid.Column="6" 
+                                                    Content="{Binding Day7}" 
+                                                    Height="40" Margin="1"
+                                                    Background="{Binding Color7}" 
+                                                    Foreground="{Binding TextColor7}"
+                                                    BorderBrush="{Binding BorderColor7}"
+                                                    BorderThickness="{Binding BorderThickness7}"
+                                                    FontWeight="{Binding FontWeight7}"
+                                                    FontSize="14"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Date7}"
+                                                    Click="DayButton_Click">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- Быстрые действия -->
+                <Border Grid.Row="2" Background="#F8F9FA" CornerRadius="10" Padding="10" Margin="0,15,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" x:Name="btnToday" 
+                                Content="Сегодня" 
+                                Height="35" Margin="2"
+                                Background="#4CAF50" 
+                                Foreground="White"
+                                BorderBrush="Transparent" 
+                                FontSize="11" FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Click="btnToday_Click"/>
+
+                        <Button Grid.Column="1" x:Name="btnYesterday" 
+                                Content="Вчера" 
+                                Height="35" Margin="2"
+                                Background="#3498DB" 
+                                Foreground="White"
+                                BorderBrush="Transparent" 
+                                FontSize="11" FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Click="btnYesterday_Click"/>
+
+                        <Button Grid.Column="2" x:Name="btnTomorrow" 
+                                Content="Завтра" 
+                                Height="35" Margin="2"
+                                Background="#F39C12" 
+                                Foreground="White"
+                                BorderBrush="Transparent" 
+                                FontSize="11" FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Click="btnTomorrow_Click"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ==================== НИЖНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="2" Background="#F0F0F0" CornerRadius="0,0,20,20" Padding="15">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Выбранная дата -->
+                    <TextBlock Grid.Column="0" Text="Выбрано:" FontSize="12" Foreground="#666" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBlock Grid.Column="1" x:Name="txtSelectedDate" 
+                               Text="19.03.2026" 
+                               FontSize="14" FontWeight="SemiBold" 
+                               Foreground="#4CAF50" 
+                               VerticalAlignment="Center"/>
+
+                    <!-- Кнопка выбора -->
+                    <Button Grid.Column="2" x:Name="btnSelect" 
+                            Content="Выбрать" 
+                            Height="35" Width="80"
+                            Background="#4CAF50" Foreground="White"
+                            BorderBrush="Transparent"
+                            FontSize="12" FontWeight="SemiBold"
+                            Cursor="Hand"
+                            Margin="10,0,5,0"
+                            Click="btnSelect_Click"/>
+
+                    <!-- Кнопка отмены -->
+                    <Button Grid.Column="3" x:Name="btnCancel" 
+                            Content="Отмена" 
+                            Height="35" Width="70"
+                            Background="Transparent" 
+                            BorderBrush="#DDD" BorderThickness="1"
+                            Foreground="#666"
+                            FontSize="12"
+                            Cursor="Hand"
+                            Click="btnCancel_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

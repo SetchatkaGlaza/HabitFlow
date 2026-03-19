@@ -1,0 +1,376 @@
+﻿<Window x:Class="HabitFlow.CategoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HabitFlow"
+        mc:Ignorable="d"
+        Title="Управление категориями привычек"
+        Height="700" Width="900"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Loaded="Window_Loaded">
+
+    <Border CornerRadius="20" Background="#F5F7FA" Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#33000000" Opacity="0.3"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="80"/>
+            </Grid.RowDefinitions>
+
+            <!-- ==================== ВЕРХНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="0" Background="White" CornerRadius="20,20,0,0" Padding="25,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Заголовок -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="📁" FontSize="28" Margin="0,0,10,0"/>
+                        <TextBlock Text="Категории привычек" FontSize="24" FontWeight="SemiBold" Foreground="#333"/>
+                    </StackPanel>
+
+                    <!-- Статус -->
+                    <Border Grid.Column="1" x:Name="borderStatus" Background="#4CAF5020" CornerRadius="15" Padding="15,5" 
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                        <TextBlock x:Name="txtStatus" Text="" Foreground="#4CAF50" FontSize="12"/>
+                    </Border>
+
+                    <!-- Кнопки управления -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="btnMinimize" Content="─" Width="35" Height="35" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button x:Name="btnClose" Content="✕" Width="35" Height="35" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ==================== ОСНОВНОЙ КОНТЕНТ ==================== -->
+            <Grid Grid.Row="1" Margin="25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ===== ЛЕВАЯ ЧАСТЬ: Список категорий ===== -->
+                <Border Grid.Column="0" Background="White" CornerRadius="15" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                    </Border.Effect>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Заголовок -->
+                        <TextBlock Grid.Row="0" Text="Категории" 
+                                   FontSize="16" FontWeight="SemiBold" Foreground="#333" 
+                                   Margin="0,0,0,15"/>
+
+                        <!-- Кнопка добавления категории -->
+                        <Button Grid.Row="1" x:Name="btnAddCategory" 
+                                Content="➕ Добавить категорию" 
+                                Height="40" Margin="0,0,0,15"
+                                Background="#4CAF50" Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="12" FontWeight="SemiBold"
+                                Cursor="Hand"
+                                Click="btnAddCategory_Click"/>
+
+                        <!-- Список категорий -->
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ListBox x:Name="listCategories" 
+                                     Background="Transparent" 
+                                     BorderThickness="0"
+                                     SelectionMode="Single"
+                                     SelectionChanged="listCategories_SelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding BackgroundColor}" 
+                                                CornerRadius="8" Padding="10" 
+                                                Margin="0,0,0,5"
+                                                BorderBrush="{Binding BorderColor}"
+                                                BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Цветовая метка -->
+                                                <Border Grid.Column="0" 
+                                                        Width="16" Height="16" 
+                                                        Background="{Binding Color}" 
+                                                        CornerRadius="4" 
+                                                        Margin="0,0,10,0"/>
+
+                                                <!-- Название категории -->
+                                                <TextBlock Grid.Column="1" 
+                                                           Text="{Binding CategoryName}" 
+                                                           FontSize="14" 
+                                                           Foreground="{Binding TextColor}"
+                                                           VerticalAlignment="Center"/>
+
+                                                <!-- Счетчик привычек -->
+                                                <Border Grid.Column="2" 
+                                                        Background="{Binding CountBgColor}" 
+                                                        CornerRadius="10" 
+                                                        Padding="6,2"
+                                                        Margin="5,0,0,0">
+                                                    <TextBlock Text="{Binding HabitsCount}" 
+                                                               FontSize="11" FontWeight="Bold" 
+                                                               Foreground="{Binding CountTextColor}"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+
+                        <!-- Статистика -->
+                        <Border Grid.Row="3" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="0,15,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Всего категорий" FontSize="11" Foreground="#999"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Всего привычек" FontSize="11" Foreground="#999"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" x:Name="txtTotalCategories" 
+                                           Text="0" FontSize="18" FontWeight="Bold" Foreground="#333"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="txtTotalHabitsInCategories" 
+                                           Text="0" FontSize="18" FontWeight="Bold" Foreground="#333"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ===== ПРАВАЯ ЧАСТЬ: Детали категории и привычки ===== -->
+                <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                    </Border.Effect>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Заголовок с названием выбранной категории -->
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" x:Name="colorPreview" 
+                                    Width="24" Height="24" 
+                                    Background="#4CAF50" 
+                                    CornerRadius="6" 
+                                    Margin="0,0,10,0"/>
+
+                            <TextBlock Grid.Column="1" x:Name="txtSelectedCategory" 
+                                       Text="Выберите категорию" 
+                                       FontSize="16" FontWeight="SemiBold" 
+                                       Foreground="#333" 
+                                       VerticalAlignment="Center"/>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button x:Name="btnEditCategory" 
+                                        Content="✏️" 
+                                        Width="35" Height="35"
+                                        Background="Transparent" 
+                                        BorderBrush="#DDD" 
+                                        BorderThickness="1"
+                                        FontSize="16"
+                                        Cursor="Hand"
+                                        ToolTip="Редактировать категорию"
+                                        Margin="0,0,5,0"
+                                        Click="btnEditCategory_Click"
+                                        IsEnabled="False">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="8"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <Button x:Name="btnDeleteCategory" 
+                                        Content="🗑️" 
+                                        Width="35" Height="35"
+                                        Background="Transparent" 
+                                        BorderBrush="#DDD" 
+                                        BorderThickness="1"
+                                        FontSize="16"
+                                        Cursor="Hand"
+                                        ToolTip="Удалить категорию"
+                                        Click="btnDeleteCategory_Click"
+                                        IsEnabled="False">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="8"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Привычки в категории -->
+                        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="Привычки в этой категории" 
+                                           FontSize="14" FontWeight="SemiBold" Foreground="#333"/>
+
+                                <TextBlock Grid.Column="1" x:Name="txtCategoryHabitsCount" 
+                                           Text="0" FontSize="14" FontWeight="Bold" Foreground="#4CAF50"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Список привычек в категории -->
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ListBox x:Name="listCategoryHabits" 
+                                     Background="Transparent" 
+                                     BorderThickness="0"
+                                     SelectionMode="Extended">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#F8F9FA" 
+                                                CornerRadius="8" Padding="10" 
+                                                Margin="0,0,0,5">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Иконка привычки -->
+                                                <TextBlock Grid.Column="0" Text="{Binding Icon}" 
+                                                           FontSize="16" Margin="0,0,10,0" VerticalAlignment="Center"/>
+
+                                                <!-- Название привычки -->
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="{Binding HabitName}" 
+                                                               FontSize="14" FontWeight="SemiBold" 
+                                                               Foreground="#333"/>
+                                                    <TextBlock Text="{Binding Description}" 
+                                                               FontSize="11" Foreground="#999"
+                                                               TextWrapping="Wrap" MaxWidth="300"/>
+                                                </StackPanel>
+
+                                                <!-- CheckBox для назначения категории -->
+                                                <CheckBox Grid.Column="2" 
+                                                          IsChecked="{Binding IsInCategory}"
+                                                          Checked="HabitCategory_Changed"
+                                                          Unchecked="HabitCategory_Changed"
+                                                          Tag="{Binding HabitId}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+
+                        <!-- Кнопка применения изменений -->
+                        <Button Grid.Row="2" x:Name="btnApplyChanges" 
+                                Content="💾 Применить изменения" 
+                                Height="45" Margin="0,15,0,0"
+                                Background="#3498DB" Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="14" FontWeight="SemiBold"
+                                Cursor="Hand"
+                                VerticalAlignment="Bottom"
+                                Click="btnApplyChanges_Click"
+                                IsEnabled="False"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ==================== НИЖНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="2" Background="White" CornerRadius="0,0,20,20" Padding="25,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Подсказка -->
+                    <TextBlock Grid.Column="0" Text="✓ Отметьте привычки, которые хотите добавить в категорию" 
+                               Foreground="#666" FontSize="12" VerticalAlignment="Center"/>
+
+                    <!-- Кнопка сортировки -->
+                    <Button Grid.Column="1" x:Name="btnSortByCategory" 
+                            Content="🔄 Сортировать по категориям" 
+                            Height="40" Padding="15,0"
+                            Background="Transparent" 
+                            BorderBrush="#DDD" 
+                            BorderThickness="1.5"
+                            Foreground="#666"
+                            FontSize="12"
+                            Cursor="Hand"
+                            Click="btnSortByCategory_Click"/>
+
+                    <!-- Кнопка закрытия -->
+                    <Button Grid.Column="3" x:Name="btnBack" 
+                            Content="Закрыть" 
+                            Height="40" Width="100"
+                            Background="Transparent" 
+                            BorderBrush="#DDD" BorderThickness="1.5"
+                            Foreground="#666"
+                            Cursor="Hand"
+                            Click="btnBack_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
