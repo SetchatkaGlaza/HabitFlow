@@ -1,6 +1,6 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -21,6 +21,10 @@ namespace HabitFlow
         public LoginWindow()
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             CheckForRememberedUser();
         }
@@ -35,7 +39,15 @@ namespace HabitFlow
         // Закрытие окна
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            var result = ConfirmationDialog.ShowWarning(
+                "Выход из приложения",
+                "Вы уверены, что хотите закрыть приложение?"
+            );
+
+            if (result)
+            {
+                Application.Current.Shutdown();
+            }
         }
 
         // Проверка на запомненного пользователя
@@ -44,9 +56,9 @@ namespace HabitFlow
             try
             {
                 // Проверяем, есть ли сохраненный пользователь
-                if (Properties.Settings.Default.RememberedUserId > 0)
+                if (Settings.Default.RememberedUserId > 0)
                 {
-                    int rememberedUserId = Properties.Settings.Default.RememberedUserId;
+                    int rememberedUserId = Settings.Default.RememberedUserId;
                     var user = _context.Users.Find(rememberedUserId);
 
                     if (user != null && user.IsActive == true)
@@ -61,9 +73,9 @@ namespace HabitFlow
                     else
                     {
                         // Если пользователь не найден или неактивен, очищаем сохраненные данные
-                        Properties.Settings.Default.RememberedUserId = 0;
-                        Properties.Settings.Default.RememberedUserName = "";
-                        Properties.Settings.Default.Save();
+                        Settings.Default.RememberedUserId = 0;
+                        Settings.Default.RememberedUserName = "";
+                        Settings.Default.Save();
                     }
                 }
             }
@@ -186,22 +198,21 @@ namespace HabitFlow
                     // Если отмечено "Запомнить меня", сохраняем данные
                     if (chkRememberMe.IsChecked == true)
                     {
-                        Properties.Settings.Default.RememberedUserId = user.UserId;
-                        Properties.Settings.Default.RememberedUserName = user.UserName;
-                        Properties.Settings.Default.Save();
+                        Settings.Default.RememberedUserId = user.UserId;
+                        Settings.Default.RememberedUserName = user.UserName;
+                        Settings.Default.Save();
                     }
                     else
                     {
                         // Если галочка снята, очищаем сохраненные данные
-                        Properties.Settings.Default.RememberedUserId = 0;
-                        Properties.Settings.Default.RememberedUserName = "";
-                        Properties.Settings.Default.Save();
+                        Settings.Default.RememberedUserId = 0;
+                        Settings.Default.RememberedUserName = "";
+                        Settings.Default.Save();
                     }
 
-                    // Открываем главное окно
-                    MainWindow mainWindow = new MainWindow(user);
-                    mainWindow.Show();
-                    this.Close();
+                    // Открываем главное окно с сохранением состояния
+                    var mainWindow = new MainWindow(user);
+                    WindowStateManager.OpenWindow(this, mainWindow);
                 }
                 else
                 {
@@ -218,18 +229,15 @@ namespace HabitFlow
         // Переход к регистрации
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-            RegisterWindow registerWindow = new RegisterWindow();
-            registerWindow.Show();
-            this.Close();
+            var registerWindow = new RegisterWindow();
+            WindowStateManager.OpenWindow(this, registerWindow);
         }
 
         // Обработчик "Забыли пароль?"
         private void btnForgotPassword_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Функция восстановления пароля будет доступна в следующей версии.\n\nОбратитесь к администратору для сброса пароля.",
-                          "Восстановление пароля",
-                          MessageBoxButton.OK,
-                          MessageBoxImage.Information);
+            ConfirmationDialog.ShowInfo("Восстановление пароля",
+                "Функция восстановления пароля будет доступна в следующей версии.\n\nОбратитесь к администратору для сброса пароля.");
         }
 
         // Закрытие сообщения об ошибке

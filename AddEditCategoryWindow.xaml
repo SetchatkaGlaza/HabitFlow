@@ -44,7 +44,8 @@
                         FontSize="18"
                         Cursor="Hand"
                         DockPanel.Dock="Right"
-                        Click="btnClose_Click">
+                        Click="btnClose_Click"
+                        ToolTip="Закрыть">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="17.5"/>
@@ -102,6 +103,7 @@
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
                              MaxLength="500"
+                             TextChanged="txtDescription_TextChanged"
                              Margin="0,0,0,15">
                         <TextBox.Resources>
                             <Style TargetType="Border">
@@ -139,7 +141,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon2" 
                                     Content="📊" 
                                     Width="50" Height="50" 
@@ -158,7 +159,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon3" 
                                     Content="🏃" 
                                     Width="50" Height="50" 
@@ -177,7 +177,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon4" 
                                     Content="📚" 
                                     Width="50" Height="50" 
@@ -196,7 +195,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon5" 
                                     Content="💪" 
                                     Width="50" Height="50" 
@@ -215,7 +213,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon6" 
                                     Content="🧠" 
                                     Width="50" Height="50" 
@@ -234,7 +231,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon7" 
                                     Content="💧" 
                                     Width="50" Height="50" 
@@ -253,7 +249,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon8" 
                                     Content="🥗" 
                                     Width="50" Height="50" 
@@ -272,7 +267,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon9" 
                                     Content="😴" 
                                     Width="50" Height="50" 
@@ -291,7 +285,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon10" 
                                     Content="🎯" 
                                     Width="50" Height="50" 
@@ -310,7 +303,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon11" 
                                     Content="🎨" 
                                     Width="50" Height="50" 
@@ -329,7 +321,6 @@
                                     </Style>
                                 </Button.Resources>
                             </Button>
-
                             <Button x:Name="btnIcon12" 
                                     Content="💰" 
                                     Width="50" Height="50" 
@@ -382,7 +373,6 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-
                         <Button Grid.Column="1" x:Name="btnColor2" 
                                 Width="40" Height="40" 
                                 Background="#3498DB" 
@@ -398,7 +388,6 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-
                         <Button Grid.Column="2" x:Name="btnColor3" 
                                 Width="40" Height="40" 
                                 Background="#E74C3C" 
@@ -414,7 +403,6 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-
                         <Button Grid.Column="3" x:Name="btnColor4" 
                                 Width="40" Height="40" 
                                 Background="#F39C12" 
@@ -430,7 +418,6 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-
                         <Button Grid.Column="4" x:Name="btnColor5" 
                                 Width="40" Height="40" 
                                 Background="#9B59B6" 
@@ -446,7 +433,6 @@
                                 </Style>
                             </Button.Resources>
                         </Button>
-
                         <Button Grid.Column="5" x:Name="btnColor6" 
                                 Width="40" Height="40" 
                                 Background="#1ABC9C" 
@@ -473,6 +459,7 @@
                     <ComboBox x:Name="cmbDisplayOrder" 
                               Height="40" 
                               FontSize="14"
+                              SelectionChanged="Setting_Changed"
                               Margin="0,0,0,10">
                         <ComboBox.Resources>
                             <Style TargetType="Border">
@@ -504,6 +491,7 @@
                                        Margin="0,0,0,10"/>
 
                             <Border Grid.Row="1" 
+                                    x:Name="previewBorder"
                                     Background="{Binding ElementName=btnColor1, Path=Background}"
                                     CornerRadius="8" 
                                     Padding="10">
@@ -529,7 +517,7 @@
                                             CornerRadius="10" 
                                             Padding="6,2">
                                         <TextBlock x:Name="previewCount" 
-                                                   Text="12" 
+                                                   Text="0" 
                                                    FontSize="11" FontWeight="Bold" 
                                                    Foreground="White"/>
                                     </Border>
@@ -619,7 +607,7 @@
                        Foreground="#999" 
                        VerticalAlignment="Bottom" 
                        HorizontalAlignment="Left"
-                       Margin="0,0,0,55"/>
+                       Margin="0,0,0,5"/>
         </Grid>
     </Border>
 </Window>

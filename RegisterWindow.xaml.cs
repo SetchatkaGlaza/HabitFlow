@@ -1,6 +1,6 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,11 +17,14 @@ namespace HabitFlow
     public partial class RegisterWindow : Window
     {
         private HabitTrackerEntities _context;
-        private bool _isPasswordVisible = false;
 
         public RegisterWindow()
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             btnRegister.IsEnabled = false;
         }
@@ -36,7 +39,15 @@ namespace HabitFlow
         // Закрытие окна
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            var result = ConfirmationDialog.ShowWarning(
+                "Выход из приложения",
+                "Вы уверены, что хотите закрыть приложение?"
+            );
+
+            if (result)
+            {
+                Application.Current.Shutdown();
+            }
         }
 
         // Проверка сложности пароля
@@ -54,7 +65,10 @@ namespace HabitFlow
                 passwordStrengthFill.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50")); // Зеленый
 
             // Обновление ширины индикатора
-            passwordStrengthFill.Width = (passwordStrengthIndicator.ActualWidth * strength) / 6;
+            if (passwordStrengthIndicator.ActualWidth > 0)
+            {
+                passwordStrengthFill.Width = (passwordStrengthIndicator.ActualWidth * strength) / 6;
+            }
 
             ValidateForm();
         }
@@ -170,8 +184,6 @@ namespace HabitFlow
                 {
                     UserName = txtUsername.Text,
                     Email = txtEmail.Text,
-                    // В реальном проекте пароль должен хешироваться!
-                    // Здесь для примера, но лучше хранить хеш
                     PasswordHash = HashPassword(txtPassword.Password),
                     CreatedAt = DateTime.Now,
                     IsActive = true
@@ -183,17 +195,20 @@ namespace HabitFlow
                 // Если отмечено "Запомнить меня", сохраняем данные
                 if (chkRememberMe.IsChecked == true)
                 {
-                    Properties.Settings.Default.RememberedUserId = newUser.UserId;
-                    Properties.Settings.Default.RememberedUserName = newUser.UserName;
-                    Properties.Settings.Default.Save();
+                    Settings.Default.RememberedUserId = newUser.UserId;
+                    Settings.Default.RememberedUserName = newUser.UserName;
+                    Settings.Default.Save();
                 }
 
-                // Открываем главное окно приложения
-                MainWindow mainWindow = new MainWindow(newUser);
-                mainWindow.Show();
+                // Показываем сообщение об успешной регистрации
+                ConfirmationDialog.ShowSuccess(
+                    "Регистрация успешна",
+                    $"Добро пожаловать, {newUser.UserName}!"
+                );
 
-                // Закрываем окно регистрации
-                this.Close();
+                // Открываем главное окно с сохранением состояния
+                var mainWindow = new MainWindow(newUser);
+                WindowStateManager.OpenWindow(this, mainWindow);
             }
             catch (Exception ex)
             {
@@ -204,9 +219,8 @@ namespace HabitFlow
         // Переход к окну авторизации
         private void btnGoToLogin_Click(object sender, RoutedEventArgs e)
         {
-            LoginWindow loginWindow = new LoginWindow();
-            loginWindow.Show();
-            this.Close();
+            var loginWindow = new LoginWindow();
+            WindowStateManager.OpenWindow(this, loginWindow);
         }
 
         // Отображение ошибки

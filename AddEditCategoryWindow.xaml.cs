@@ -8,9 +8,6 @@ using System.Windows.Media;
 
 namespace HabitFlow
 {
-    /// <summary>
-    /// Логика взаимодействия для AddEditCategoryWindow.xaml
-    /// </summary>
     public partial class AddEditCategoryWindow : Window
     {
         private HabitTrackerEntities _context;
@@ -20,6 +17,8 @@ namespace HabitFlow
 
         private string _selectedIcon = "📁";
         private string _selectedColor = "#4CAF50";
+        private bool _hasUnsavedChanges = false;
+
         private Button _lastSelectedIconButton;
         private Button _lastSelectedColorButton;
 
@@ -30,12 +29,12 @@ namespace HabitFlow
             _userId = userId;
             _categoryId = categoryId;
 
-            // Выделяем первую иконку по умолчанию
+            // Выделяем первую иконку
             _lastSelectedIconButton = btnIcon1;
             btnIcon1.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50"));
             btnIcon1.Foreground = Brushes.White;
 
-            // Выделяем первый цвет по умолчанию
+            // Выделяем первый цвет
             _lastSelectedColorButton = btnColor1;
             btnColor1.BorderBrush = Brushes.Black;
             btnColor1.BorderThickness = new Thickness(2);
@@ -46,14 +45,30 @@ namespace HabitFlow
                 LoadCategoryData(categoryId.Value);
             }
 
-            // Обновляем предпросмотр при изменении
             UpdatePreview();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Устанавливаем фокус на поле названия
             txtCategoryName.Focus();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_hasUnsavedChanges)
+            {
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Закрыть без сохранения?",
+                    "Продолжить"
+                );
+
+                if (!result) // Если пользователь нажал "Отмена"
+                {
+                    e.Cancel = true;
+                }
+                // Если result == true (нажал "Продолжить"), окно закроется
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -62,7 +77,6 @@ namespace HabitFlow
                 this.DragMove();
         }
 
-        // Загрузка данных категории для редактирования
         private void LoadCategoryData(int categoryId)
         {
             try
@@ -79,20 +93,18 @@ namespace HabitFlow
                 _selectedColor = _category.Color ?? "#4CAF50";
                 HighlightSelectedColor(_selectedColor);
 
-                // Устанавливаем порядок отображения
                 int orderIndex = Math.Min(_category.DisplayOrder ?? 0, 9);
                 cmbDisplayOrder.SelectedIndex = orderIndex;
 
+                _hasUnsavedChanges = false;
                 UpdatePreview();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при загрузке данных: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при загрузке данных: {ex.Message}");
             }
         }
 
-        // Выделение выбранной иконки
         private void HighlightSelectedIcon(string icon)
         {
             if (_lastSelectedIconButton != null)
@@ -121,7 +133,6 @@ namespace HabitFlow
             }
         }
 
-        // Выделение выбранного цвета
         private void HighlightSelectedColor(string color)
         {
             if (_lastSelectedColorButton != null)
@@ -147,28 +158,15 @@ namespace HabitFlow
             UpdatePreview();
         }
 
-        // Обновление предпросмотра
         private void UpdatePreview()
         {
             try
             {
-                // Обновляем иконку
                 previewIcon.Text = _selectedIcon;
-
-                // Обновляем название
                 previewName.Text = string.IsNullOrWhiteSpace(txtCategoryName.Text)
                     ? "Название категории"
                     : txtCategoryName.Text;
-
-                // Обновляем цвет
-                var previewBorder = previewIcon.Parent as Border;
-                if (previewBorder != null)
-                {
-                    previewBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_selectedColor));
-                }
-
-                // Обновляем счетчик (для примера)
-                previewCount.Text = "0";
+                previewBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_selectedColor));
             }
             catch (Exception ex)
             {
@@ -176,7 +174,6 @@ namespace HabitFlow
             }
         }
 
-        // Обработчик выбора иконки
         private void IconButton_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -185,10 +182,10 @@ namespace HabitFlow
                 _selectedIcon = button.Tag.ToString();
                 HighlightSelectedIcon(_selectedIcon);
                 UpdatePreview();
+                _hasUnsavedChanges = true;
             }
         }
 
-        // Обработчик выбора цвета
         private void ColorButton_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -196,42 +193,55 @@ namespace HabitFlow
             {
                 _selectedColor = button.Tag.ToString();
                 HighlightSelectedColor(_selectedColor);
+                _hasUnsavedChanges = true;
             }
         }
 
-        // Валидация формы
         private void txtCategoryName_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             btnSave.IsEnabled = !string.IsNullOrWhiteSpace(txtCategoryName.Text);
             UpdatePreview();
+            _hasUnsavedChanges = true;
         }
 
-        // Сохранение
+        private void txtDescription_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            _hasUnsavedChanges = true;
+        }
+
+        private void Setting_Changed(object sender, RoutedEventArgs e)
+        {
+            _hasUnsavedChanges = true;
+        }
+
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Получаем выбранный порядок отображения
                 int displayOrder = 0;
-                if (cmbDisplayOrder.SelectedItem is ComboBoxItem item)
+                if (cmbDisplayOrder.SelectedItem is System.Windows.Controls.ComboBoxItem item)
                 {
                     int.TryParse(item.Tag.ToString(), out displayOrder);
                 }
 
                 if (_categoryId.HasValue)
                 {
-                    // Редактирование существующей категории
-                    _category.CategoryName = txtCategoryName.Text.Trim();
-                    _category.Description = string.IsNullOrWhiteSpace(txtDescription.Text) ? null : txtDescription.Text.Trim();
-                    _category.Icon = _selectedIcon;
-                    _category.Color = _selectedColor;
-                    _category.DisplayOrder = displayOrder;
+                    if (_category == null)
+                        _category = _context.Categories.Find(_categoryId.Value);
 
-                    _context.Entry(_category).State = System.Data.Entity.EntityState.Modified;
+                    if (_category != null)
+                    {
+                        _category.CategoryName = txtCategoryName.Text.Trim();
+                        _category.Description = string.IsNullOrWhiteSpace(txtDescription.Text) ? null : txtDescription.Text.Trim();
+                        _category.Icon = _selectedIcon;
+                        _category.Color = _selectedColor;
+                        _category.DisplayOrder = displayOrder;
+
+                        _context.Entry(_category).State = System.Data.Entity.EntityState.Modified;
+                    }
                 }
                 else
                 {
-                    // Создание новой категории
                     var newCategory = new Categories
                     {
                         UserId = _userId,
@@ -253,22 +263,56 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при сохранении: {ex.Message}");
             }
         }
 
-        // Отмена
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
-            Close();
+            if (_hasUnsavedChanges)
+            {
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Закрыть без сохранения?",
+                    "Продолжить"
+                );
+
+                if (result) // Если пользователь нажал "Продолжить"
+                {
+                    DialogResult = false;
+                    Close();
+                }
+                // Если result == false (нажал "Отмена"), ничего не делаем
+            }
+            else
+            {
+                DialogResult = false;
+                Close();
+            }
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
-            Close();
+            if (_hasUnsavedChanges)
+            {
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Закрыть без сохранения?",
+                    "Продолжить"
+                );
+
+                if (result) // Если пользователь нажал "Продолжить"
+                {
+                    DialogResult = false;
+                    Close();
+                }
+                // Если result == false (нажал "Отмена"), ничего не делаем
+            }
+            else
+            {
+                DialogResult = false;
+                Close();
+            }
         }
     }
 }

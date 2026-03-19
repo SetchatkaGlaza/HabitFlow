@@ -1,4 +1,5 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -17,14 +18,25 @@ namespace HabitFlow
         public AboutWindow(Users user = null)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _currentUser = user;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadVersionInfo();
-            LoadDeveloperInfo();
-            LoadCopyrightInfo();
+            try
+            {
+                LoadVersionInfo();
+                LoadDeveloperInfo();
+                LoadCopyrightInfo();
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке информации: {ex.Message}");
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -64,8 +76,7 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не удалось открыть ссылку: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Не удалось открыть ссылку: {ex.Message}");
             }
         }
 
@@ -77,8 +88,7 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не удалось открыть ссылку: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Не удалось открыть ссылку: {ex.Message}");
             }
         }
 
@@ -92,20 +102,36 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не удалось открыть почтовый клиент: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Не удалось открыть почтовый клиент: {ex.Message}");
             }
         }
 
-        // Закрытие окна
-        private void btnClose_Click(object sender, RoutedEventArgs e)
+        // Возврат в главное окно
+        private void btnBack_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
 
+        // Закрытие окна (через кнопку OK)
         private void btnOk_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
+        }
+
+        // Закрытие окна (через кнопку Close)
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
+        }
+
+        // Управление окном
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         // Метод для обновления информации о пользователе (если нужно)

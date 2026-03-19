@@ -107,6 +107,10 @@ namespace HabitFlow
         public SettingsWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
             _settings = AppSettings.Load();
@@ -118,10 +122,17 @@ namespace HabitFlow
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadSettings();
-            UpdateColorPreview();
-            UpdateDateFormatPreview();
-            UpdateLastBackupInfo();
+            try
+            {
+                LoadSettings();
+                UpdateColorPreview();
+                UpdateDateFormatPreview();
+                UpdateLastBackupInfo();
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке настроек: {ex.Message}");
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -641,17 +652,7 @@ namespace HabitFlow
             }
         }
 
-        // Управление окном
-        private void btnMinimize_Click(object sender, RoutedEventArgs e)
-        {
-            this.WindowState = WindowState.Minimized;
-        }
-
-        private void btnClose_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
+        // Возврат в главное окно
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             if (_hasUnsavedChanges)
@@ -664,17 +665,53 @@ namespace HabitFlow
                 if (result == true)
                 {
                     SaveSettings();
-                    this.Close();
                 }
                 else if (result == false)
                 {
-                    this.Close();
+                    // Продолжаем закрытие без сохранения
+                }
+                else
+                {
+                    return; // Отмена
                 }
             }
-            else
+
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
+        }
+
+        // Управление окном
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            if (_hasUnsavedChanges)
             {
-                this.Close();
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Сохранить?"
+                );
+
+                if (result == true)
+                {
+                    SaveSettings();
+                }
+                else if (result == false)
+                {
+                    // Продолжаем закрытие без сохранения
+                }
+                else
+                {
+                    return; // Отмена
+                }
             }
+
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
     }
 }

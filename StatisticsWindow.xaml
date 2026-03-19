@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:HabitFlow"
         mc:Ignorable="d"
         Title="Статистика и графики"
-        Height="1200" Width="1300"
+        Height="800" Width="1300"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -25,7 +25,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="80"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="70"/>
+                <RowDefinition Height="80"/>
             </Grid.RowDefinitions>
 
             <!-- ==================== ВЕРХНЯЯ ПАНЕЛЬ ==================== -->
@@ -60,7 +60,8 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button x:Name="btnMinimize" Content="─" Width="35" Height="35" 
                                 Background="Transparent" BorderBrush="Transparent" 
-                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click">
+                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click"
+                                ToolTip="Свернуть">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="17.5"/>
@@ -69,7 +70,8 @@
                         </Button>
                         <Button x:Name="btnClose" Content="✕" Width="35" Height="35" 
                                 Background="Transparent" BorderBrush="Transparent" 
-                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click">
+                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click"
+                                ToolTip="Закрыть">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="17.5"/>
@@ -135,7 +137,8 @@
                                 <RadioButton Grid.Row="2" x:Name="rbAllHabits" 
                                              Content="Показать статистику по всем привычкам"
                                              Margin="0,0,0,15"
-                                             Checked="rbAllHabits_Checked"/>
+                                             Checked="rbAllHabits_Checked"
+                                             Unchecked="rbAllHabits_Unchecked"/>
 
                                 <Border Grid.Row="3" Background="#F8F9FA" CornerRadius="10" Padding="15">
                                     <StackPanel>
@@ -201,8 +204,8 @@
                                     <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="0,0,5,0">
                                         <StackPanel>
                                             <TextBlock Text="🔥 Текущая серия" FontSize="12" Foreground="#999" Margin="0,0,0,5"/>
-                                            <TextBlock x:Name="txtCurrentStreak" Text="0" FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
-                                            <TextBlock x:Name="txtCurrentStreakDate" Text="дней" FontSize="11" Foreground="#999"/>
+                                            <TextBlock x:Name="txtCurrentStreak" Text="0" FontSize="28" FontWeight="Bold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtCurrentStreakDate" Text="дней" FontSize="11" Foreground="#999" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
 
@@ -210,8 +213,8 @@
                                     <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5">
                                         <StackPanel>
                                             <TextBlock Text="🏆 Рекорд" FontSize="12" Foreground="#999" Margin="0,0,0,5"/>
-                                            <TextBlock x:Name="txtMaxStreak" Text="0" FontSize="28" FontWeight="Bold" Foreground="#E67E22"/>
-                                            <TextBlock x:Name="txtMaxStreakDate" Text="дней" FontSize="11" Foreground="#999"/>
+                                            <TextBlock x:Name="txtMaxStreak" Text="0" FontSize="28" FontWeight="Bold" Foreground="#E67E22" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtMaxStreakDate" Text="дней" FontSize="11" Foreground="#999" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
 
@@ -219,8 +222,8 @@
                                     <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5">
                                         <StackPanel>
                                             <TextBlock Text="✅ Выполнено" FontSize="12" Foreground="#999" Margin="0,0,0,5"/>
-                                            <TextBlock x:Name="txtTotalCompleted" Text="0" FontSize="28" FontWeight="Bold" Foreground="#3498DB"/>
-                                            <TextBlock x:Name="txtTotalCompletedPercent" Text="0%" FontSize="11" Foreground="#999"/>
+                                            <TextBlock x:Name="txtTotalCompleted" Text="0" FontSize="28" FontWeight="Bold" Foreground="#3498DB" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtTotalCompletedPercent" Text="0%" FontSize="11" Foreground="#999" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
 
@@ -228,8 +231,8 @@
                                     <Border Grid.Column="3" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5,0,0,0">
                                         <StackPanel>
                                             <TextBlock Text="➖ Пропуски" FontSize="12" Foreground="#999" Margin="0,0,0,5"/>
-                                            <TextBlock x:Name="txtTotalSkipped" Text="0" FontSize="28" FontWeight="Bold" Foreground="#E74C3C"/>
-                                            <TextBlock x:Name="txtTotalSkippedPercent" Text="0%" FontSize="11" Foreground="#999"/>
+                                            <TextBlock x:Name="txtTotalSkipped" Text="0" FontSize="28" FontWeight="Bold" Foreground="#E74C3C" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtTotalSkippedPercent" Text="0%" FontSize="11" Foreground="#999" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -436,10 +439,10 @@
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
                                                                                 <Border Width="14" Height="14" 
-                                                                        Background="{Binding Color}" 
-                                                                        CornerRadius="3"
-                                                                        ToolTip="{Binding ToolTip}"
-                                                                        Margin="0,1"/>
+                                                                                        Background="{Binding Color}" 
+                                                                                        CornerRadius="3"
+                                                                                        ToolTip="{Binding ToolTip}"
+                                                                                        Margin="0,1"/>
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -523,10 +526,14 @@
             </ScrollViewer>
 
             <!-- ==================== НИЖНЯЯ ПАНЕЛЬ ==================== -->
-            <Border Grid.Row="2" Background="White" Padding="25,0">
+            <Border Grid.Row="2" Background="White" CornerRadius="0,0,20,20" Padding="25,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
@@ -535,15 +542,53 @@
                                Text="Анализируй прогресс, становись лучше! 📈" 
                                Foreground="#666" VerticalAlignment="Center"/>
 
+                    
+
                     <!-- Кнопка экспорта -->
-                    <Button Grid.Column="1" x:Name="btnExport" 
+                    <Button Grid.Column="3" x:Name="btnExport" 
                             Content="📥 Экспорт статистики" 
-                            Height="40" Padding="20,0"
-                            Background="#3498DB" Foreground="White"
+                            Height="40" Padding="15,0"
+                            Background="#4CAF50" Foreground="White"
                             BorderBrush="Transparent"
-                            FontSize="14" FontWeight="SemiBold"
+                            FontSize="12" FontWeight="SemiBold"
                             Cursor="Hand"
-                            Click="btnExport_Click"/>
+                            Click="btnExport_Click"
+                            ToolTip="Экспортировать статистику в CSV">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Opacity" Value="1"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="0.9"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Кнопка закрытия -->
+                    <Button Grid.Column="5" x:Name="btnBack" 
+                            Content="✕ Закрыть" 
+                            Height="40" Width="100"
+                            Background="Transparent" 
+                            BorderBrush="#E74C3C" 
+                            BorderThickness="1.5"
+                            Foreground="#E74C3C"
+                            FontSize="12" FontWeight="SemiBold"
+                            Cursor="Hand"
+                            Click="btnClose_Click"
+                            ToolTip="Закрыть окно статистики">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Opacity" Value="1"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E74C3C20"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
             </Border>
         </Grid>

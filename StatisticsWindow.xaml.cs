@@ -7,8 +7,8 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using HabitFlow.Entity;
+using HabitFlow.Properties;
 using LiveCharts;
-using LiveCharts.Configurations;
 using LiveCharts.Wpf;
 
 namespace HabitFlow
@@ -68,6 +68,17 @@ namespace HabitFlow
         public StatisticsWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
+            if (user == null)
+            {
+                ConfirmationDialog.ShowError("Ошибка", "Пользователь не найден");
+                Close();
+                return;
+            }
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
 
@@ -77,9 +88,16 @@ namespace HabitFlow
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadHabitsForSelector();
-            LoadStatistics();
-            UpdateMotivationPhrase();
+            try
+            {
+                LoadHabitsForSelector();
+                LoadStatistics();
+                UpdateMotivationPhrase();
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке статистики: {ex.Message}");
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -113,197 +131,304 @@ namespace HabitFlow
         // Загрузка привычек в выпадающий список
         private void LoadHabitsForSelector()
         {
-            var habits = _context.Habits
-                .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
-                .OrderBy(h => h.HabitName)
-                .ToList();
-
-            cmbHabitSelector.ItemsSource = habits;
-
-            if (habits.Any())
+            try
             {
-                cmbHabitSelector.SelectedIndex = 0;
+                if (_currentUser == null) return;
+
+                var habits = _context.Habits
+                    .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
+                    .OrderBy(h => h.HabitName)
+                    .ToList();
+
+                cmbHabitSelector.ItemsSource = habits;
+
+                if (habits.Any())
+                {
+                    cmbHabitSelector.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки привычек: {ex.Message}");
             }
         }
 
         // Загрузка статистики
         private void LoadStatistics()
         {
-            if (rbAllHabits.IsChecked == true)
+            try
             {
-                _selectedHabitId = null;
-                LoadAllHabitsStatistics();
+                if (_currentUser == null) return;
+
+                if (rbAllHabits.IsChecked == true)
+                {
+                    _selectedHabitId = null;
+                    LoadAllHabitsStatistics();
+                }
+                else
+                {
+                    if (cmbHabitSelector == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("cmbHabitSelector is null");
+                        return;
+                    }
+
+                    var selectedItem = cmbHabitSelector.SelectedItem;
+                    if (selectedItem == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("selectedItem is null");
+                        return;
+                    }
+
+                    var selectedHabit = selectedItem as Habits;
+                    if (selectedHabit == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("selectedHabit is null");
+                        return;
+                    }
+
+                    _selectedHabitId = selectedHabit.HabitId;
+                    LoadHabitStatistics(_selectedHabitId.Value);
+                }
             }
-            else if (cmbHabitSelector.SelectedItem != null)
+            catch (Exception ex)
             {
-                var selectedHabit = cmbHabitSelector.SelectedItem as Habits;
-                _selectedHabitId = selectedHabit?.HabitId;
-                LoadHabitStatistics(_selectedHabitId.Value);
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки статистики: {ex.Message}");
+                ConfirmationDialog.ShowError("Ошибка", $"Не удалось загрузить статистику: {ex.Message}");
             }
         }
 
         // Загрузка статистики по конкретной привычке
         private void LoadHabitStatistics(int habitId)
         {
-            var habit = _context.Habits.Find(habitId);
-            if (habit == null) return;
+            try
+            {
+                if (_context == null || _currentUser == null) return;
 
-            // Получаем все записи привычки
-            var records = _context.HabitRecords
-                .Where(r => r.HabitId == habitId)
-                .OrderBy(r => r.RecordDate)
-                .ToList();
+                var habit = _context.Habits.Find(habitId);
+                if (habit == null) return;
 
-            // Обновляем быструю статистику
-            UpdateQuickStats(records);
+                // Получаем все записи привычки
+                var records = _context.HabitRecords
+                    .Where(r => r.HabitId == habitId)
+                    .OrderBy(r => r.RecordDate)
+                    .ToList();
 
-            // Обновляем ключевые показатели
-            UpdateKeyMetrics(habitId, records);
+                if (records == null) records = new List<HabitRecords>();
 
-            // Обновляем графики в зависимости от периода
-            UpdateDailyChart(records);
-            UpdateWeekdayChart(records);
-            UpdateMonthlyChart(records);
-            UpdatePieChart(records);
-            UpdateHeatMap(records);
+                // Обновляем быструю статистику
+                UpdateQuickStats(records);
+
+                // Обновляем ключевые показатели
+                UpdateKeyMetrics(habitId, records);
+
+                // Обновляем графики в зависимости от периода
+                UpdateDailyChart(records);
+                UpdateWeekdayChart(records);
+                UpdateMonthlyChart(records);
+                UpdatePieChart(records);
+                UpdateHeatMap(records);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки статистики привычки: {ex.Message}");
+            }
         }
 
         // Загрузка статистики по всем привычкам
         private void LoadAllHabitsStatistics()
         {
-            var allHabitIds = _context.Habits
-                .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
-                .Select(h => h.HabitId)
-                .ToList();
+            try
+            {
+                if (_context == null || _currentUser == null) return;
 
-            var allRecords = _context.HabitRecords
-                .Where(r => allHabitIds.Contains(r.HabitId))
-                .OrderBy(r => r.RecordDate)
-                .ToList();
+                var allHabitIds = _context.Habits
+                    .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
+                    .Select(h => h.HabitId)
+                    .ToList();
 
-            // Обновляем быструю статистику
-            UpdateQuickStats(allRecords);
+                if (allHabitIds == null) allHabitIds = new List<int>();
 
-            // Обновляем ключевые показатели
-            UpdateAllHabitsKeyMetrics(allRecords);
+                var allRecords = _context.HabitRecords
+                    .Where(r => allHabitIds.Contains(r.HabitId))
+                    .OrderBy(r => r.RecordDate)
+                    .ToList();
 
-            // Обновляем графики
-            UpdateDailyChart(allRecords);
-            UpdateWeekdayChart(allRecords);
-            UpdateMonthlyChart(allRecords);
-            UpdatePieChart(allRecords);
-            UpdateHeatMap(allRecords);
+                if (allRecords == null) allRecords = new List<HabitRecords>();
+
+                // Обновляем быструю статистику
+                UpdateQuickStats(allRecords);
+
+                // Обновляем ключевые показатели
+                UpdateAllHabitsKeyMetrics(allRecords);
+
+                // Обновляем графики
+                UpdateDailyChart(allRecords);
+                UpdateWeekdayChart(allRecords);
+                UpdateMonthlyChart(allRecords);
+                UpdatePieChart(allRecords);
+                UpdateHeatMap(allRecords);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки статистики всех привычек: {ex.Message}");
+            }
         }
 
         // Обновление быстрой статистики
         private void UpdateQuickStats(List<HabitRecords> records)
         {
-            int total = records.Count;
-            int completed = records.Count(r => r.StatusId == 2);
-            int skipped = records.Count(r => r.StatusId == 3);
-            int notSet = records.Count(r => r.StatusId == 1);
+            try
+            {
+                if (records == null)
+                {
+                    txtQuickTotalRecords.Text = "0";
+                    txtQuickCompleted.Text = "0";
+                    txtQuickSkipped.Text = "0";
+                    txtQuickPercent.Text = "0%";
+                    return;
+                }
 
-            txtQuickTotalRecords.Text = total.ToString();
-            txtQuickCompleted.Text = completed.ToString();
-            txtQuickSkipped.Text = skipped.ToString();
+                int total = records.Count;
+                int completed = records.Count(r => r != null && r.StatusId == 2);
+                int skipped = records.Count(r => r != null && r.StatusId == 3);
 
-            double percent = total > 0 ? (double)completed / total * 100 : 0;
-            txtQuickPercent.Text = $"{percent:F1}%";
+                txtQuickTotalRecords.Text = total.ToString();
+                txtQuickCompleted.Text = completed.ToString();
+                txtQuickSkipped.Text = skipped.ToString();
+
+                double percent = total > 0 ? (double)completed / total * 100 : 0;
+                txtQuickPercent.Text = $"{percent:F1}%";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateQuickStats: {ex.Message}");
+            }
         }
 
         // Обновление ключевых метрик для одной привычки
         private void UpdateKeyMetrics(int habitId, List<HabitRecords> records)
         {
-            // Текущая серия
-            int currentStreak = CalculateCurrentStreak(habitId);
-            txtCurrentStreak.Text = currentStreak.ToString();
-            txtCurrentStreakDate.Text = GetStreakDateRange(habitId, currentStreak);
+            try
+            {
+                if (records == null) records = new List<HabitRecords>();
 
-            // Максимальная серия
-            int maxStreak = CalculateMaxStreak(habitId);
-            txtMaxStreak.Text = maxStreak.ToString();
-            txtMaxStreakDate.Text = "дней";
+                // Текущая серия
+                int currentStreak = CalculateCurrentStreak(habitId);
+                txtCurrentStreak.Text = currentStreak.ToString();
+                txtCurrentStreakDate.Text = GetStreakDateRange(habitId, currentStreak);
 
-            // Всего выполнений и процент
-            int completed = records.Count(r => r.StatusId == 2);
-            int skipped = records.Count(r => r.StatusId == 3);
-            int total = records.Count;
+                // Максимальная серия
+                int maxStreak = CalculateMaxStreak(habitId);
+                txtMaxStreak.Text = maxStreak.ToString();
+                txtMaxStreakDate.Text = maxStreak > 0 ? "дней" : "нет рекорда";
 
-            txtTotalCompleted.Text = completed.ToString();
-            txtTotalCompletedPercent.Text = total > 0 ? $"{(double)completed / total * 100:F1}%" : "0%";
+                // Всего выполнений и процент
+                int completed = records.Count(r => r != null && r.StatusId == 2);
+                int skipped = records.Count(r => r != null && r.StatusId == 3);
+                int total = records.Count;
 
-            txtTotalSkipped.Text = skipped.ToString();
-            txtTotalSkippedPercent.Text = total > 0 ? $"{(double)skipped / total * 100:F1}%" : "0%";
+                txtTotalCompleted.Text = completed.ToString();
+                txtTotalCompletedPercent.Text = total > 0 ? $"{(double)completed / total * 100:F1}%" : "0%";
+
+                txtTotalSkipped.Text = skipped.ToString();
+                txtTotalSkippedPercent.Text = total > 0 ? $"{(double)skipped / total * 100:F1}%" : "0%";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateKeyMetrics: {ex.Message}");
+            }
         }
 
         // Обновление ключевых метрик для всех привычек
         private void UpdateAllHabitsKeyMetrics(List<HabitRecords> allRecords)
         {
-            // Текущая серия (максимальная среди всех привычек)
-            var habits = _context.Habits
-                .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
-                .Select(h => h.HabitId)
-                .ToList();
-
-            int bestCurrentStreak = 0;
-            foreach (var habitId in habits)
+            try
             {
-                int streak = CalculateCurrentStreak(habitId);
-                if (streak > bestCurrentStreak)
-                    bestCurrentStreak = streak;
+                if (allRecords == null) allRecords = new List<HabitRecords>();
+                if (_context == null || _currentUser == null) return;
+
+                // Текущая серия (максимальная среди всех привычек)
+                var habits = _context.Habits
+                    .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
+                    .Select(h => h.HabitId)
+                    .ToList();
+
+                if (habits == null) habits = new List<int>();
+
+                int bestCurrentStreak = 0;
+                foreach (var habitId in habits)
+                {
+                    int streak = CalculateCurrentStreak(habitId);
+                    if (streak > bestCurrentStreak)
+                        bestCurrentStreak = streak;
+                }
+
+                txtCurrentStreak.Text = bestCurrentStreak.ToString();
+                txtCurrentStreakDate.Text = bestCurrentStreak > 0 ? "лучшая серия" : "нет серии";
+
+                // Максимальная серия (максимальная среди всех привычек)
+                int bestMaxStreak = 0;
+                foreach (var habitId in habits)
+                {
+                    int maxStreak = CalculateMaxStreak(habitId);
+                    if (maxStreak > bestMaxStreak)
+                        bestMaxStreak = maxStreak;
+                }
+
+                txtMaxStreak.Text = bestMaxStreak.ToString();
+                txtMaxStreakDate.Text = bestMaxStreak > 0 ? "рекорд" : "нет рекорда";
+
+                // Всего выполнений
+                int completed = allRecords.Count(r => r != null && r.StatusId == 2);
+                int skipped = allRecords.Count(r => r != null && r.StatusId == 3);
+                int total = allRecords.Count;
+
+                txtTotalCompleted.Text = completed.ToString();
+                txtTotalCompletedPercent.Text = total > 0 ? $"{(double)completed / total * 100:F1}%" : "0%";
+
+                txtTotalSkipped.Text = skipped.ToString();
+                txtTotalSkippedPercent.Text = total > 0 ? $"{(double)skipped / total * 100:F1}%" : "0%";
             }
-
-            txtCurrentStreak.Text = bestCurrentStreak.ToString();
-            txtCurrentStreakDate.Text = "лучшая серия";
-
-            // Максимальная серия (максимальная среди всех привычек)
-            int bestMaxStreak = 0;
-            foreach (var habitId in habits)
+            catch (Exception ex)
             {
-                int maxStreak = CalculateMaxStreak(habitId);
-                if (maxStreak > bestMaxStreak)
-                    bestMaxStreak = maxStreak;
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateAllHabitsKeyMetrics: {ex.Message}");
             }
-
-            txtMaxStreak.Text = bestMaxStreak.ToString();
-            txtMaxStreakDate.Text = "рекорд";
-
-            // Всего выполнений
-            int completed = allRecords.Count(r => r.StatusId == 2);
-            int skipped = allRecords.Count(r => r.StatusId == 3);
-            int total = allRecords.Count;
-
-            txtTotalCompleted.Text = completed.ToString();
-            txtTotalCompletedPercent.Text = total > 0 ? $"{(double)completed / total * 100:F1}%" : "0%";
-
-            txtTotalSkipped.Text = skipped.ToString();
-            txtTotalSkippedPercent.Text = total > 0 ? $"{(double)skipped / total * 100:F1}%" : "0%";
         }
 
         // Расчет текущей серии
         private int CalculateCurrentStreak(int habitId)
         {
-            var records = _context.HabitRecords
-                .Where(r => r.HabitId == habitId && r.StatusId == 2)
-                .OrderByDescending(r => r.RecordDate)
-                .Select(r => r.RecordDate)
-                .ToList();
-
-            if (!records.Any())
-                return 0;
-
-            int streak = 0;
-            var currentDate = DateTime.Today;
-
-            for (int i = 0; i < records.Count; i++)
+            try
             {
-                if (records[i] == currentDate.AddDays(-i))
-                    streak++;
-                else
-                    break;
-            }
+                if (_context == null) return 0;
 
-            return streak;
+                var records = _context.HabitRecords
+                    .Where(r => r.HabitId == habitId && r.StatusId == 2)
+                    .OrderByDescending(r => r.RecordDate)
+                    .Select(r => r.RecordDate)
+                    .ToList();
+
+                if (!records.Any())
+                    return 0;
+
+                int streak = 0;
+                var currentDate = DateTime.Today;
+
+                for (int i = 0; i < records.Count; i++)
+                {
+                    if (records[i] == currentDate.AddDays(-i))
+                        streak++;
+                    else
+                        break;
+                }
+
+                return streak;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         // Получение диапазона дат для серии
@@ -311,18 +436,24 @@ namespace HabitFlow
         {
             if (streak == 0) return "нет серии";
 
-            var records = _context.HabitRecords
-                .Where(r => r.HabitId == habitId && r.StatusId == 2)
-                .OrderByDescending(r => r.RecordDate)
-                .Take(streak)
-                .ToList();
-
-            if (records.Any())
+            try
             {
-                var startDate = records.Last().RecordDate;
-                var endDate = records.First().RecordDate;
-                return $"{startDate:dd.MM} - {endDate:dd.MM}";
+                if (_context == null) return "дней";
+
+                var records = _context.HabitRecords
+                    .Where(r => r.HabitId == habitId && r.StatusId == 2)
+                    .OrderByDescending(r => r.RecordDate)
+                    .Take(streak)
+                    .ToList();
+
+                if (records.Any())
+                {
+                    var startDate = records.Last().RecordDate;
+                    var endDate = records.First().RecordDate;
+                    return $"{startDate:dd.MM} - {endDate:dd.MM}";
+                }
             }
+            catch { }
 
             return "дней";
         }
@@ -330,207 +461,267 @@ namespace HabitFlow
         // Расчет максимальной серии
         private int CalculateMaxStreak(int habitId)
         {
-            var records = _context.HabitRecords
-                .Where(r => r.HabitId == habitId && r.StatusId == 2)
-                .OrderBy(r => r.RecordDate)
-                .Select(r => r.RecordDate)
-                .ToList();
-
-            if (!records.Any())
-                return 0;
-
-            int maxStreak = 1;
-            int currentStreak = 1;
-
-            for (int i = 1; i < records.Count; i++)
+            try
             {
-                if (records[i] == records[i - 1].AddDays(1))
-                {
-                    currentStreak++;
-                    if (currentStreak > maxStreak)
-                        maxStreak = currentStreak;
-                }
-                else
-                {
-                    currentStreak = 1;
-                }
-            }
+                if (_context == null) return 0;
 
-            return maxStreak;
+                var records = _context.HabitRecords
+                    .Where(r => r.HabitId == habitId && r.StatusId == 2)
+                    .OrderBy(r => r.RecordDate)
+                    .Select(r => r.RecordDate)
+                    .ToList();
+
+                if (!records.Any())
+                    return 0;
+
+                int maxStreak = 1;
+                int currentStreak = 1;
+
+                for (int i = 1; i < records.Count; i++)
+                {
+                    if (records[i] == records[i - 1].AddDays(1))
+                    {
+                        currentStreak++;
+                        if (currentStreak > maxStreak)
+                            maxStreak = currentStreak;
+                    }
+                    else
+                    {
+                        currentStreak = 1;
+                    }
+                }
+
+                return maxStreak;
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         // Обновление дневного графика
         private void UpdateDailyChart(List<HabitRecords> records)
         {
-            CompletedDailyValues.Clear();
-            SkippedDailyValues.Clear();
-            DailyLabels.Clear();
-
-            DateTime startDate, endDate;
-
-            switch (_currentPeriod)
+            try
             {
-                case "week":
-                    startDate = DateTime.Today.AddDays(-6);
-                    endDate = DateTime.Today;
-                    break;
-                case "month":
-                    startDate = DateTime.Today.AddDays(-29);
-                    endDate = DateTime.Today;
-                    break;
-                case "quarter":
-                    startDate = DateTime.Today.AddDays(-89);
-                    endDate = DateTime.Today;
-                    break;
-                case "year":
-                    startDate = DateTime.Today.AddDays(-364);
-                    endDate = DateTime.Today;
-                    break;
-                case "all":
-                    startDate = records.Any() ? records.Min(r => r.RecordDate) : DateTime.Today;
-                    endDate = DateTime.Today;
-                    break;
-                default:
-                    startDate = DateTime.Today.AddDays(-6);
-                    endDate = DateTime.Today;
-                    break;
+                if (records == null) records = new List<HabitRecords>();
+                if (CompletedDailyValues == null || SkippedDailyValues == null || DailyLabels == null) return;
+
+                CompletedDailyValues.Clear();
+                SkippedDailyValues.Clear();
+                DailyLabels.Clear();
+
+                DateTime startDate, endDate;
+
+                switch (_currentPeriod)
+                {
+                    case "week":
+                        startDate = DateTime.Today.AddDays(-6);
+                        endDate = DateTime.Today;
+                        break;
+                    case "month":
+                        startDate = DateTime.Today.AddDays(-29);
+                        endDate = DateTime.Today;
+                        break;
+                    case "quarter":
+                        startDate = DateTime.Today.AddDays(-89);
+                        endDate = DateTime.Today;
+                        break;
+                    case "year":
+                        startDate = DateTime.Today.AddDays(-364);
+                        endDate = DateTime.Today;
+                        break;
+                    case "all":
+                        startDate = records.Any() ? records.Min(r => r.RecordDate) : DateTime.Today;
+                        endDate = DateTime.Today;
+                        break;
+                    default:
+                        startDate = DateTime.Today.AddDays(-6);
+                        endDate = DateTime.Today;
+                        break;
+                }
+
+                for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+                {
+                    var dayRecords = records.Where(r => r != null && r.RecordDate == date).ToList();
+
+                    int completed = dayRecords.Count(r => r.StatusId == 2);
+                    int skipped = dayRecords.Count(r => r.StatusId == 3);
+
+                    CompletedDailyValues.Add(completed);
+                    SkippedDailyValues.Add(skipped);
+                    DailyLabels.Add(date.ToString("dd.MM"));
+                }
             }
-
-            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+            catch (Exception ex)
             {
-                var dayRecords = records.Where(r => r.RecordDate == date).ToList();
-
-                int completed = dayRecords.Count(r => r.StatusId == 2);
-                int skipped = dayRecords.Count(r => r.StatusId == 3);
-
-                CompletedDailyValues.Add(completed);
-                SkippedDailyValues.Add(skipped);
-                DailyLabels.Add(date.ToString("dd.MM"));
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateDailyChart: {ex.Message}");
             }
         }
 
         // Обновление графика по дням недели
         private void UpdateWeekdayChart(List<HabitRecords> records)
         {
-            WeekdayValues.Clear();
-
-            for (int day = 1; day <= 7; day++)
+            try
             {
-                int count = records.Count(r =>
-                    (int)r.RecordDate.DayOfWeek == (day % 7) &&
-                    r.StatusId == 2);
+                if (records == null) records = new List<HabitRecords>();
+                if (WeekdayValues == null) return;
 
-                WeekdayValues.Add(count);
+                WeekdayValues.Clear();
+
+                for (int day = 1; day <= 7; day++)
+                {
+                    int count = records.Count(r =>
+                        r != null &&
+                        (int)r.RecordDate.DayOfWeek == (day % 7) &&
+                        r.StatusId == 2);
+
+                    WeekdayValues.Add(count);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateWeekdayChart: {ex.Message}");
             }
         }
 
         // Обновление месячного графика
         private void UpdateMonthlyChart(List<HabitRecords> records)
         {
-            MonthlyPercentValues.Clear();
-            MonthlyLabels.Clear();
-
-            var groupedByMonth = records
-                .Where(r => r.StatusId == 2)
-                .GroupBy(r => new { r.RecordDate.Year, r.RecordDate.Month })
-                .OrderBy(g => g.Key.Year)
-                .ThenBy(g => g.Key.Month)
-                .ToList();
-
-            foreach (var month in groupedByMonth)
+            try
             {
-                int daysInMonth = DateTime.DaysInMonth(month.Key.Year, month.Key.Month);
-                int completedDays = month.Count();
-                double percent = (double)completedDays / daysInMonth * 100;
+                if (records == null) records = new List<HabitRecords>();
+                if (MonthlyPercentValues == null || MonthlyLabels == null) return;
 
-                MonthlyPercentValues.Add(percent);
-                MonthlyLabels.Add($"{month.Key.Month:00}.{month.Key.Year}");
+                MonthlyPercentValues.Clear();
+                MonthlyLabels.Clear();
+
+                var groupedByMonth = records
+                    .Where(r => r != null && r.StatusId == 2)
+                    .GroupBy(r => new { r.RecordDate.Year, r.RecordDate.Month })
+                    .OrderBy(g => g.Key.Year)
+                    .ThenBy(g => g.Key.Month)
+                    .ToList();
+
+                foreach (var month in groupedByMonth)
+                {
+                    int daysInMonth = DateTime.DaysInMonth(month.Key.Year, month.Key.Month);
+                    int completedDays = month.Count();
+                    double percent = daysInMonth > 0 ? (double)completedDays / daysInMonth * 100 : 0;
+
+                    MonthlyPercentValues.Add(percent);
+                    MonthlyLabels.Add($"{month.Key.Month:00}.{month.Key.Year}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateMonthlyChart: {ex.Message}");
             }
         }
 
         // Обновление круговой диаграммы
         private void UpdatePieChart(List<HabitRecords> records)
         {
-            CompletedPieValue.Clear();
-            SkippedPieValue.Clear();
-            NotSetPieValue.Clear();
+            try
+            {
+                if (records == null) records = new List<HabitRecords>();
+                if (CompletedPieValue == null || SkippedPieValue == null || NotSetPieValue == null) return;
 
-            int completed = records.Count(r => r.StatusId == 2);
-            int skipped = records.Count(r => r.StatusId == 3);
-            int notSet = records.Count(r => r.StatusId == 1);
+                CompletedPieValue.Clear();
+                SkippedPieValue.Clear();
+                NotSetPieValue.Clear();
 
-            CompletedPieValue.Add(completed);
-            SkippedPieValue.Add(skipped);
-            NotSetPieValue.Add(notSet);
+                int completed = records.Count(r => r != null && r.StatusId == 2);
+                int skipped = records.Count(r => r != null && r.StatusId == 3);
+                int notSet = records.Count(r => r != null && r.StatusId == 1);
+
+                CompletedPieValue.Add(completed);
+                SkippedPieValue.Add(skipped);
+                NotSetPieValue.Add(notSet);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdatePieChart: {ex.Message}");
+            }
         }
 
         // Обновление тепловой карты
         private void UpdateHeatMap(List<HabitRecords> records)
         {
-            var heatMapData = new List<HeatMapMonth>();
-
-            var startDate = DateTime.Today.AddDays(-364); // Последние 365 дней
-            var endDate = DateTime.Today;
-
-            var recordsByDate = records
-                .Where(r => r.RecordDate >= startDate && r.RecordDate <= endDate)
-                .GroupBy(r => r.RecordDate)
-                .ToDictionary(g => g.Key, g => g.Count(r => r.StatusId == 2));
-
-            // Группируем по месяцам
-            for (int i = 0; i < 12; i++)
+            try
             {
-                var monthDate = startDate.AddMonths(i);
-                var month = new HeatMapMonth
-                {
-                    Month = GetRussianMonthName(monthDate.Month),
-                    Weeks = new List<HeatMapWeek>()
-                };
+                if (records == null) records = new List<HabitRecords>();
+                if (HeatMapControl == null) return;
 
-                // Создаем 5-6 недель в месяце
-                var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
-                var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+                var heatMapData = new List<HeatMapMonth>();
 
-                for (int week = 0; week < 6; week++)
+                var startDate = DateTime.Today.AddDays(-364); // Последние 365 дней
+                var endDate = DateTime.Today;
+
+                var recordsByDate = records
+                    .Where(r => r != null && r.RecordDate >= startDate && r.RecordDate <= endDate)
+                    .GroupBy(r => r.RecordDate)
+                    .ToDictionary(g => g.Key, g => g.Count(r => r.StatusId == 2));
+
+                // Группируем по месяцам
+                for (int i = 0; i < 12; i++)
                 {
-                    var weekData = new HeatMapWeek
+                    var monthDate = startDate.AddMonths(i);
+                    var month = new HeatMapMonth
                     {
-                        Days = new List<HeatMapDay>()
+                        Month = GetRussianMonthName(monthDate.Month),
+                        Weeks = new List<HeatMapWeek>()
                     };
 
-                    for (int day = 0; day < 7; day++)
+                    // Создаем 5-6 недель в месяце
+                    var monthStart = new DateTime(monthDate.Year, monthDate.Month, 1);
+                    var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+                    for (int week = 0; week < 6; week++)
                     {
-                        var currentDate = monthStart.AddDays(week * 7 + day);
-                        if (currentDate <= monthEnd && currentDate <= endDate)
+                        var weekData = new HeatMapWeek
                         {
-                            int count = recordsByDate.ContainsKey(currentDate) ? recordsByDate[currentDate] : 0;
-                            weekData.Days.Add(new HeatMapDay
-                            {
-                                Date = currentDate,
-                                Count = count,
-                                Color = GetHeatMapColor(count),
-                                ToolTip = $"{currentDate:dd.MM.yyyy}\nВыполнено: {count} привычек"
-                            });
-                        }
-                        else
+                            Days = new List<HeatMapDay>()
+                        };
+
+                        for (int day = 0; day < 7; day++)
                         {
-                            weekData.Days.Add(new HeatMapDay
+                            var currentDate = monthStart.AddDays(week * 7 + day);
+                            if (currentDate <= monthEnd && currentDate <= endDate)
                             {
-                                Date = currentDate,
-                                Count = 0,
-                                Color = "#EBEDF0",
-                                ToolTip = "Нет данных"
-                            });
+                                int count = recordsByDate != null && recordsByDate.ContainsKey(currentDate) ? recordsByDate[currentDate] : 0;
+                                weekData.Days.Add(new HeatMapDay
+                                {
+                                    Date = currentDate,
+                                    Count = count,
+                                    Color = GetHeatMapColor(count),
+                                    ToolTip = $"{currentDate:dd.MM.yyyy}\nВыполнено: {count} привычек"
+                                });
+                            }
+                            else
+                            {
+                                weekData.Days.Add(new HeatMapDay
+                                {
+                                    Date = currentDate,
+                                    Count = 0,
+                                    Color = "#EBEDF0",
+                                    ToolTip = "Нет данных"
+                                });
+                            }
                         }
+
+                        month.Weeks.Add(weekData);
                     }
 
-                    month.Weeks.Add(weekData);
+                    heatMapData.Add(month);
                 }
 
-                heatMapData.Add(month);
+                HeatMapControl.ItemsSource = heatMapData;
             }
-
-            HeatMapControl.ItemsSource = heatMapData;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка обновления тепловой карты: {ex.Message}");
+            }
         }
 
         // Получение цвета для тепловой карты
@@ -554,17 +745,26 @@ namespace HabitFlow
         // Обновление мотивационной фразы
         private void UpdateMotivationPhrase()
         {
-            string[] phrases = {
-                "📊 Анализируй прогресс, становись лучше!",
-                "📈 Каждая статистика показывает твой рост!",
-                "🎯 Данные не врут - ты становишься лучше!",
-                "⭐ Маленькие победы складываются в большие достижения!",
-                "🔥 Твоя активность растет с каждым днем!",
-                "💪 Статистика - зеркало твоего прогресса!"
-            };
+            try
+            {
+                if (txtMotivationPhrase == null) return;
 
-            var random = new Random();
-            txtMotivationPhrase.Text = phrases[random.Next(phrases.Length)];
+                string[] phrases = {
+                    "📊 Анализируй прогресс, становись лучше!",
+                    "📈 Каждая статистика показывает твой рост!",
+                    "🎯 Данные не врут - ты становишься лучше!",
+                    "⭐ Маленькие победы складываются в большие достижения!",
+                    "🔥 Твоя активность растет с каждым днем!",
+                    "💪 Статистика - зеркало твоего прогресса!"
+                };
+
+                var random = new Random();
+                txtMotivationPhrase.Text = phrases[random.Next(phrases.Length)];
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка UpdateMotivationPhrase: {ex.Message}");
+            }
         }
 
         // Обработчики событий
@@ -581,22 +781,45 @@ namespace HabitFlow
 
         private void cmbHabitSelector_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (cmbHabitSelector.SelectedItem != null)
+            try
             {
-                rbAllHabits.IsChecked = false;
-                LoadStatistics();
+                if (cmbHabitSelector.SelectedItem != null)
+                {
+                    rbAllHabits.IsChecked = false;
+                    LoadStatistics();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка SelectionChanged: {ex.Message}");
             }
         }
 
         private void rbAllHabits_Checked(object sender, RoutedEventArgs e)
         {
-            cmbHabitSelector.IsEnabled = false;
-            LoadStatistics();
+            try
+            {
+                if (cmbHabitSelector != null)
+                    cmbHabitSelector.IsEnabled = false;
+                LoadStatistics();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка rbAllHabits_Checked: {ex.Message}");
+            }
         }
 
         private void rbAllHabits_Unchecked(object sender, RoutedEventArgs e)
         {
-            cmbHabitSelector.IsEnabled = true;
+            try
+            {
+                if (cmbHabitSelector != null)
+                    cmbHabitSelector.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка rbAllHabits_Unchecked: {ex.Message}");
+            }
         }
 
         // Экспорт статистики
@@ -614,43 +837,64 @@ namespace HabitFlow
                 if (dialog.ShowDialog() == true)
                 {
                     ExportToCsv(dialog.FileName);
-                    MessageBox.Show("Статистика успешно экспортирована!", "Экспорт",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    ConfirmationDialog.ShowSuccess("Экспорт завершен",
+                        "Статистика успешно экспортирована!");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при экспорте: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка экспорта",
+                    $"Ошибка при экспорте: {ex.Message}");
             }
         }
 
         // Экспорт в CSV
         private void ExportToCsv(string filename)
         {
-            using (var writer = new System.IO.StreamWriter(filename))
+            try
             {
-                writer.WriteLine("Дата;Привычка;Статус");
-
-                var habits = _context.Habits
-                    .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
-                    .ToList();
-
-                foreach (var habit in habits)
+                using (var writer = new System.IO.StreamWriter(filename))
                 {
-                    var records = _context.HabitRecords
-                        .Where(r => r.HabitId == habit.HabitId)
-                        .OrderBy(r => r.RecordDate)
+                    writer.WriteLine("Дата;Привычка;Статус");
+
+                    var habits = _context.Habits
+                        .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
                         .ToList();
 
-                    foreach (var record in records)
+                    foreach (var habit in habits)
                     {
-                        string status = record.StatusId == 2 ? "Выполнено" :
-                                       record.StatusId == 3 ? "Пропущено" : "Не отмечено";
+                        var records = _context.HabitRecords
+                            .Where(r => r.HabitId == habit.HabitId)
+                            .OrderBy(r => r.RecordDate)
+                            .ToList();
 
-                        writer.WriteLine($"{record.RecordDate:yyyy-MM-dd};{habit.HabitName};{status}");
+                        foreach (var record in records)
+                        {
+                            string status = record.StatusId == 2 ? "Выполнено" :
+                                           record.StatusId == 3 ? "Пропущено" : "Не отмечено";
+
+                            writer.WriteLine($"{record.RecordDate:yyyy-MM-dd};{habit.HabitName};{status}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Ошибка при сохранении CSV: {ex.Message}");
+            }
+        }
+
+        // Возврат в главное окно
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var mainWindow = new MainWindow(_currentUser);
+                WindowStateManager.OpenWindow(this, mainWindow);
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при переходе: {ex.Message}");
             }
         }
 
@@ -658,11 +902,20 @@ namespace HabitFlow
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            try
+            {
+                var mainWindow = new MainWindow(_currentUser);
+                WindowStateManager.OpenWindow(this, mainWindow);
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при закрытии: {ex.Message}");
+            }
         }
     }
 }

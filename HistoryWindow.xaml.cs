@@ -1,4 +1,5 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -87,6 +88,10 @@ namespace HabitFlow
         public HistoryWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
             _currentMonth = DateTime.Today;
@@ -96,11 +101,18 @@ namespace HabitFlow
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadHabitsFilter();
-            LoadMonthData();
-            UpdateCalendar();
-            UpdateSelectedDateDetails();
-            UpdateMonthStats();
+            try
+            {
+                LoadHabitsFilter();
+                LoadMonthData();
+                UpdateCalendar();
+                UpdateSelectedDateDetails();
+                UpdateMonthStats();
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке истории: {ex.Message}");
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -112,19 +124,38 @@ namespace HabitFlow
         // Загрузка фильтра привычек
         private void LoadHabitsFilter()
         {
-            var habits = _context.Habits
-                .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
-                .OrderBy(h => h.HabitName)
-                .ToList();
-
-            foreach (var habit in habits)
+            try
             {
-                var item = new System.Windows.Controls.ComboBoxItem
+                var habits = _context.Habits
+                    .Where(h => h.UserId == _currentUser.UserId && h.IsActive == true)
+                    .OrderBy(h => h.HabitName)
+                    .ToList();
+
+                cmbHistoryHabitFilter.Items.Clear();
+
+                // Добавляем пункт "Все привычки"
+                var allItem = new ComboBoxItem
                 {
-                    Content = habit.HabitName,
-                    Tag = habit.HabitId
+                    Content = "Все привычки",
+                    Tag = 0
                 };
-                cmbHistoryHabitFilter.Items.Add(item);
+                cmbHistoryHabitFilter.Items.Add(allItem);
+
+                foreach (var habit in habits)
+                {
+                    var item = new ComboBoxItem
+                    {
+                        Content = habit.HabitName,
+                        Tag = habit.HabitId
+                    };
+                    cmbHistoryHabitFilter.Items.Add(item);
+                }
+
+                cmbHistoryHabitFilter.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки фильтра: {ex.Message}");
             }
         }
 
@@ -186,32 +217,31 @@ namespace HabitFlow
                         var currentDate = new DateTime(_currentMonth.Year, _currentMonth.Month, dayNumber);
 
                         // Устанавливаем значение дня
-                        typeof(CalendarRow).GetProperty($"Day{i + 1}").SetValue(row, dayNumber.ToString());
-                        typeof(CalendarRow).GetProperty($"Date{i + 1}").SetValue(row, currentDate);
+                        SetRowProperty(row, $"Day{i + 1}", dayNumber.ToString());
+                        SetRowProperty(row, $"Date{i + 1}", currentDate);
 
                         // Определяем цвет ячейки
                         string color = GetDayColor(currentDate);
-                        typeof(CalendarRow).GetProperty($"Color{i + 1}").SetValue(row, color);
+                        SetRowProperty(row, $"Color{i + 1}", color);
 
                         // Цвет текста
                         string textColor = color == "#4CAF50" || color == "#E74C3C" ? "White" : "#333";
-                        typeof(CalendarRow).GetProperty($"TextColor{i + 1}").SetValue(row, textColor);
+                        SetRowProperty(row, $"TextColor{i + 1}", textColor);
 
                         // Жирный шрифт для сегодняшнего дня
                         bool isToday = currentDate.Date == DateTime.Today;
-                        typeof(CalendarRow).GetProperty($"FontWeight{i + 1}").SetValue(row,
-                            isToday ? FontWeights.Bold : FontWeights.Normal);
+                        SetRowProperty(row, $"FontWeight{i + 1}", isToday ? FontWeights.Bold : FontWeights.Normal);
 
                         currentDay++;
                     }
                     else
                     {
                         // Пустая ячейка
-                        typeof(CalendarRow).GetProperty($"Day{i + 1}").SetValue(row, "");
-                        typeof(CalendarRow).GetProperty($"Color{i + 1}").SetValue(row, "#F8F9FA");
-                        typeof(CalendarRow).GetProperty($"TextColor{i + 1}").SetValue(row, "#999");
-                        typeof(CalendarRow).GetProperty($"FontWeight{i + 1}").SetValue(row, FontWeights.Normal);
-                        typeof(CalendarRow).GetProperty($"Date{i + 1}").SetValue(row, null);
+                        SetRowProperty(row, $"Day{i + 1}", "");
+                        SetRowProperty(row, $"Color{i + 1}", "#F8F9FA");
+                        SetRowProperty(row, $"TextColor{i + 1}", "#999");
+                        SetRowProperty(row, $"FontWeight{i + 1}", FontWeights.Normal);
+                        SetRowProperty(row, $"Date{i + 1}", null);
                     }
                 }
 
@@ -220,6 +250,13 @@ namespace HabitFlow
             }
 
             CalendarGrid.ItemsSource = calendarRows;
+        }
+
+        // Вспомогательный метод для установки свойств через рефлексию
+        private void SetRowProperty(CalendarRow row, string propertyName, object value)
+        {
+            var property = typeof(CalendarRow).GetProperty(propertyName);
+            property?.SetValue(row, value);
         }
 
         // Получение цвета для дня
@@ -276,7 +313,7 @@ namespace HabitFlow
             foreach (var habit in habits)
             {
                 // Проверяем фильтр
-                if (cmbHistoryHabitFilter.SelectedItem is System.Windows.Controls.ComboBoxItem filterItem
+                if (cmbHistoryHabitFilter.SelectedItem is ComboBoxItem filterItem
                     && filterItem.Tag != null
                     && (int)filterItem.Tag != 0
                     && (int)filterItem.Tag != habit.HabitId)
@@ -424,7 +461,7 @@ namespace HabitFlow
         }
 
         // Изменение фильтра
-        private void cmbHistoryHabitFilter_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void cmbHistoryHabitFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             LoadDayHabits();
         }
@@ -434,26 +471,28 @@ namespace HabitFlow
         {
             if (!_selectedDate.HasValue) return;
 
-            // Создаем временное окно для редактирования дня
-            // Здесь можно открыть диалог редактирования конкретного дня
-            MessageBox.Show($"Функция редактирования дня {_selectedDate.Value:dd.MM.yyyy} будет доступна в следующей версии.\n\nСейчас вы можете вернуться на главный экран и отметить этот день там.",
-                "Редактирование", MessageBoxButton.OK, MessageBoxImage.Information);
+            ConfirmationDialog.ShowInfo("Редактирование дня",
+                $"Функция редактирования дня {_selectedDate.Value:dd.MM.yyyy} будет доступна в следующей версии.\n\nСейчас вы можете вернуться на главный экран и отметить этот день там.");
+        }
+
+        // Возврат в главное окно
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
 
         // Управление окном
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
-        }
-
-        private void btnBack_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
     }
 }

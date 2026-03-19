@@ -1,8 +1,8 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System.Windows.Forms;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -46,6 +46,10 @@ namespace HabitFlow
         public ImportExportWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
 
@@ -61,9 +65,16 @@ namespace HabitFlow
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            UpdateExportStats();
-            LoadAutoBackupSettings();
-            txtBackupPath.Text = BackupPath;
+            try
+            {
+                UpdateExportStats();
+                LoadAutoBackupSettings();
+                txtBackupPath.Text = BackupPath;
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке: {ex.Message}");
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -90,7 +101,10 @@ namespace HabitFlow
                 chkAutoBackup.IsChecked = settings.AutoSave;
                 // Здесь можно загрузить другие настройки
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки настроек: {ex.Message}");
+            }
         }
 
         // Показ статуса
@@ -125,7 +139,7 @@ namespace HabitFlow
                 string format = GetSelectedExportFormat();
                 string extension = GetFormatExtension(format);
 
-                var dialog = new Microsoft.Win32.SaveFileDialog
+                var dialog = new SaveFileDialog
                 {
                     Title = "Экспорт данных",
                     FileName = $"HabitFlow_Export_{DateTime.Now:yyyyMMdd_HHmmss}",
@@ -147,7 +161,7 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                ShowStatus($"❌ Ошибка экспорта: {ex.Message}", false);
+                ConfirmationDialog.ShowError("Ошибка экспорта", $"Ошибка при экспорте: {ex.Message}");
             }
         }
 
@@ -335,7 +349,7 @@ namespace HabitFlow
 
         private void btnBrowseFile_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog
+            var dialog = new OpenFileDialog
             {
                 Title = "Выберите файл для импорта",
                 Filter = "Все поддерживаемые форматы (*.json;*.csv;*.xlsx;*.xml;*.encrypted)|*.json;*.csv;*.xlsx;*.xml;*.encrypted|JSON файлы (*.json)|*.json|CSV файлы (*.csv)|*.csv|Excel файлы (*.xlsx)|*.xlsx|XML файлы (*.xml)|*.xml|Зашифрованные файлы (*.encrypted)|*.encrypted|Все файлы (*.*)|*.*"
@@ -395,14 +409,12 @@ namespace HabitFlow
                 // Подтверждение для режима замены
                 if (rbImportReplace.IsChecked == true)
                 {
-                    var result = System.Windows.MessageBox.Show(
-                        "ВНИМАНИЕ! Режим замены удалит ВСЕ ваши текущие данные.\n\n" +
-                        "Вы уверены, что хотите продолжить?",
+                    var result = ConfirmationDialog.ShowWarning(
                         "Подтверждение замены",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
+                        "ВНИМАНИЕ! Режим замены удалит ВСЕ ваши текущие данные.\n\nВы уверены, что хотите продолжить?"
+                    );
 
-                    if (result != MessageBoxResult.Yes)
+                    if (!result)
                         return;
                 }
 
@@ -417,7 +429,7 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                ShowStatus($"❌ Ошибка импорта: {ex.Message}", false);
+                ConfirmationDialog.ShowError("Ошибка импорта", $"Ошибка при импорте: {ex.Message}");
             }
         }
 
@@ -587,7 +599,8 @@ namespace HabitFlow
 
         private void btnConnectSync_Click(object sender, RoutedEventArgs e)
         {
-            ShowStatus("🔌 Функция синхронизации будет доступна в следующей версии", false);
+            ConfirmationDialog.ShowInfo("Синхронизация",
+                "🔌 Функция синхронизации будет доступна в следующей версии");
         }
 
         // ==================== АВТО-БЭКАП ====================
@@ -623,6 +636,8 @@ namespace HabitFlow
                 var settings = AppSettings.Load();
                 // Здесь нужно добавить поле BackupPath в AppSettings
                 settings.Save();
+
+                ShowStatus("✅ Путь сохранен", true);
             }
         }
 
@@ -644,25 +659,28 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                ShowStatus($"❌ Ошибка сохранения: {ex.Message}", false);
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при сохранении настроек: {ex.Message}");
             }
         }
 
-        // ==================== УПРАВЛЕНИЕ ОКНОМ ====================
+        // Возврат в главное окно
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
+        }
 
+        // Управление окном
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
-        }
-
-        private void btnBack_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
     }
 }

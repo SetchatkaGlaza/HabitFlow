@@ -1,4 +1,5 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -63,6 +64,10 @@ namespace HabitFlow
         public AchievementsWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
 
@@ -74,10 +79,17 @@ namespace HabitFlow
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadUserStatistics();
-            InitializeAchievements();
-            UpdateDisplay();
-            UpdateMotivationMessage();
+            try
+            {
+                LoadUserStatistics();
+                InitializeAchievements();
+                UpdateDisplay();
+                UpdateMotivationMessage();
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке достижений: {ex.Message}");
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -118,6 +130,7 @@ namespace HabitFlow
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Ошибка загрузки статистики: {ex.Message}");
+                ConfirmationDialog.ShowError("Ошибка", "Не удалось загрузить статистику пользователя.");
             }
         }
 
@@ -173,7 +186,7 @@ namespace HabitFlow
             int xpInCurrentLevel = _totalXP - currentLevelXP;
             int xpNeeded = _xpForNextLevel - currentLevelXP;
 
-            int progressPercent = (xpInCurrentLevel * 100) / xpNeeded;
+            int progressPercent = xpNeeded > 0 ? (xpInCurrentLevel * 100) / xpNeeded : 100;
 
             // Определение ранга
             if (_level <= 3)
@@ -245,7 +258,7 @@ namespace HabitFlow
             AddSpecialAchievement("special_month", "📆", "Идеальный месяц", "Выполнять все привычки 30 дней подряд", 30, 50);
             AddSpecialAchievement("special_early", "🌅", "Ранняя пташка", "Отметить привычку до 8 утра 10 раз", 10, 20);
             AddSpecialAchievement("special_night", "🌙", "Ночная сова", "Отметить привычку после 23:00 10 раз", 10, 20);
-            AddSpecialAchievement("special_all", "🎯", "Абсолют", "Получить все достижения", 23, 100); // 23 - общее количество
+            AddSpecialAchievement("special_all", "🎯", "Абсолют", "Получить все достижения", 23, 100);
             AddSpecialAchievement("special_year", "🎉", "Годовщина", "Пользоваться приложением 1 год", 1, 50);
 
             // Обновление прогресса
@@ -386,7 +399,7 @@ namespace HabitFlow
                 }
             }
 
-            // Особые достижения (упрощенная логика)
+            // Особые достижения
             UpdateSpecialAchievements();
 
             foreach (var ach in _specialAchievements)
@@ -428,45 +441,66 @@ namespace HabitFlow
 
         private void UpdateSpecialAchievements()
         {
-            // Идеальная неделя
-            var specialWeek = _specialAchievements.First(a => a.Id == "special_week");
-            // Упрощенная логика - проверяем максимальную серию
-            specialWeek.CurrentProgress = _bestStreak >= 7 ? 7 : 0;
-            UpdateAchievementVisual(specialWeek);
-
-            // Идеальный месяц
-            var specialMonth = _specialAchievements.First(a => a.Id == "special_month");
-            specialMonth.CurrentProgress = _bestStreak >= 30 ? 30 : 0;
-            UpdateAchievementVisual(specialMonth);
-
-            // Ранняя пташка (упрощенно)
-            var specialEarly = _specialAchievements.First(a => a.Id == "special_early");
-            // Здесь должна быть проверка на отметки до 8 утра
-            specialEarly.CurrentProgress = 0;
-            UpdateAchievementVisual(specialEarly);
-
-            // Ночная сова (упрощенно)
-            var specialNight = _specialAchievements.First(a => a.Id == "special_night");
-            specialNight.CurrentProgress = 0;
-            UpdateAchievementVisual(specialNight);
-
-            // Абсолют (все достижения)
-            var specialAll = _specialAchievements.First(a => a.Id == "special_all");
-            int totalAchievements = _streakAchievements.Count(a => a.IsAchieved) +
-                                   _countAchievements.Count(a => a.IsAchieved) +
-                                   _habitsAchievements.Count(a => a.IsAchieved) +
-                                   _specialAchievements.Where(a => a.Id != "special_all" && a.Id != "special_year").Count(a => a.IsAchieved);
-            specialAll.CurrentProgress = Math.Min(totalAchievements, 23);
-            UpdateAchievementVisual(specialAll);
-
-            // Годовщина
-            var specialYear = _specialAchievements.First(a => a.Id == "special_year");
-            if (_currentUser.CreatedAt.HasValue)
+            try
             {
-                int years = (DateTime.Now - _currentUser.CreatedAt.Value).Days / 365;
-                specialYear.CurrentProgress = years >= 1 ? 1 : 0;
+                // Идеальная неделя
+                var specialWeek = _specialAchievements.FirstOrDefault(a => a.Id == "special_week");
+                if (specialWeek != null)
+                {
+                    specialWeek.CurrentProgress = _bestStreak >= 7 ? 7 : 0;
+                    UpdateAchievementVisual(specialWeek);
+                }
+
+                // Идеальный месяц
+                var specialMonth = _specialAchievements.FirstOrDefault(a => a.Id == "special_month");
+                if (specialMonth != null)
+                {
+                    specialMonth.CurrentProgress = _bestStreak >= 30 ? 30 : 0;
+                    UpdateAchievementVisual(specialMonth);
+                }
+
+                // Ранняя пташка
+                var specialEarly = _specialAchievements.FirstOrDefault(a => a.Id == "special_early");
+                if (specialEarly != null)
+                {
+                    // Здесь должна быть проверка на отметки до 8 утра
+                    specialEarly.CurrentProgress = 0;
+                    UpdateAchievementVisual(specialEarly);
+                }
+
+                // Ночная сова
+                var specialNight = _specialAchievements.FirstOrDefault(a => a.Id == "special_night");
+                if (specialNight != null)
+                {
+                    specialNight.CurrentProgress = 0;
+                    UpdateAchievementVisual(specialNight);
+                }
+
+                // Абсолют (все достижения)
+                var specialAll = _specialAchievements.FirstOrDefault(a => a.Id == "special_all");
+                if (specialAll != null)
+                {
+                    int totalAchievements = _streakAchievements.Count(a => a.IsAchieved) +
+                                           _countAchievements.Count(a => a.IsAchieved) +
+                                           _habitsAchievements.Count(a => a.IsAchieved) +
+                                           _specialAchievements.Where(a => a.Id != "special_all" && a.Id != "special_year").Count(a => a.IsAchieved);
+                    specialAll.CurrentProgress = Math.Min(totalAchievements, 23);
+                    UpdateAchievementVisual(specialAll);
+                }
+
+                // Годовщина
+                var specialYear = _specialAchievements.FirstOrDefault(a => a.Id == "special_year");
+                if (specialYear != null && _currentUser.CreatedAt.HasValue)
+                {
+                    int years = (DateTime.Now - _currentUser.CreatedAt.Value).Days / 365;
+                    specialYear.CurrentProgress = years >= 1 ? 1 : 0;
+                    UpdateAchievementVisual(specialYear);
+                }
             }
-            UpdateAchievementVisual(specialYear);
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка обновления особых достижений: {ex.Message}");
+            }
         }
 
         // Обновление отображения
@@ -495,20 +529,24 @@ namespace HabitFlow
             txtMotivationMessage.Text = messages[random.Next(messages.Length)];
         }
 
+        // Возврат в главное окно
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
+        }
+
         // Управление окном
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
-        }
-
-        private void btnBack_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
     }
 }

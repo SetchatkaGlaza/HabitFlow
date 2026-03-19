@@ -28,6 +28,10 @@ namespace HabitFlow
         public ProfileWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
 
@@ -52,21 +56,7 @@ namespace HabitFlow
             LoadSettings();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (_isProfileDataChanged)
-            {
-                var result = ConfirmationDialog.ShowWarning(
-                    "Несохраненные изменения",
-                    "У вас есть несохраненные изменения. Закрыть без сохранения?"
-                );
-
-                if (!result)
-                {
-                    e.Cancel = true;
-                }
-            }
-        }
+        
 
         // Перемещение окна
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -559,7 +549,7 @@ namespace HabitFlow
             {
                 try
                 {
-                    // Полное удаление пользователя (каскадно удалятся все связанные данные)
+                    // Полное удаление пользователя
                     _context.Users.Remove(_currentUser);
                     _context.SaveChanges();
 
@@ -571,18 +561,9 @@ namespace HabitFlow
                     ConfirmationDialog.ShowSuccess("До свидания",
                         "Аккаунт удален. Спасибо, что были с нами!");
 
-                    // Возвращаемся на окно входа
-                    LoginWindow loginWindow = new LoginWindow();
-                    loginWindow.Show();
-
-                    // Закрываем все окна
-                    foreach (Window window in Application.Current.Windows)
-                    {
-                        if (window != loginWindow)
-                        {
-                            window.Close();
-                        }
-                    }
+                    // Возвращаемся на окно входа с сохранением состояния
+                    var loginWindow = new LoginWindow();
+                    WindowStateManager.OpenWindow(this, loginWindow);
                 }
                 catch (Exception ex)
                 {
@@ -591,7 +572,7 @@ namespace HabitFlow
             }
         }
 
-        // Навигация
+        // Навигация назад в главное окно
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             if (_isProfileDataChanged)
@@ -604,7 +585,9 @@ namespace HabitFlow
                 if (!result) return;
             }
 
-            this.Close();
+            // Возвращаемся в главное окно с сохранением состояния
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
 
         // Обновление статуса
@@ -626,6 +609,7 @@ namespace HabitFlow
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -640,7 +624,9 @@ namespace HabitFlow
                 if (!result) return;
             }
 
-            this.Close();
+            // При закрытии возвращаемся в главное окно
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
     }
 }

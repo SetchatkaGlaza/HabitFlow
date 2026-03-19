@@ -1,4 +1,5 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -88,6 +89,10 @@ namespace HabitFlow
         public CategoryWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _context = new HabitTrackerEntities();
             _currentUser = user;
 
@@ -101,8 +106,15 @@ namespace HabitFlow
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LoadCategories();
-            UpdateTotalStats();
+            try
+            {
+                LoadCategories();
+                UpdateTotalStats();
+            }
+            catch (Exception ex)
+            {
+                ConfirmationDialog.ShowError("Ошибка загрузки", $"Ошибка при загрузке категорий: {ex.Message}");
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -349,14 +361,17 @@ namespace HabitFlow
         {
             if (_selectedCategory == null) return;
 
-            var result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить категорию \"{_selectedCategory.CategoryName}\"?\n\n" +
-                "Привычки в этой категории НЕ будут удалены, но потеряют привязку к категории.",
+            var result = ConfirmationDialog.ShowDelete(
                 "Удаление категории",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                $"Вы уверены, что хотите удалить категорию \"{_selectedCategory.CategoryName}\"?",
+                new List<string>
+                {
+                    "• Привычки в этой категории НЕ будут удалены",
+                    $"• {_categoryHabits.Count(h => h.IsInCategory)} привычек потеряют привязку к категории"
+                }
+            );
 
-            if (result == MessageBoxResult.Yes)
+            if (result)
             {
                 try
                 {
@@ -388,7 +403,10 @@ namespace HabitFlow
         private void btnSortByCategory_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
-            Close();
+
+            // Возвращаемся в главное окно с результатом
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
 
         // Показ статуса
@@ -413,42 +431,44 @@ namespace HabitFlow
             timer.Start();
         }
 
+        // Возврат в главное окно
+        private void btnBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (_hasChanges)
+            {
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Закрыть без сохранения?"
+                );
+
+                if (!result) return;
+            }
+
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
+        }
+
         // Управление окном
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             if (_hasChanges)
             {
-                var result = MessageBox.Show(
-                    "У вас есть несохраненные изменения. Закрыть без сохранения?",
-                    "Подтверждение",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Закрыть без сохранения?"
+                );
 
-                if (result == MessageBoxResult.No) return;
+                if (!result) return;
             }
 
-            this.Close();
-        }
-
-        private void btnBack_Click(object sender, RoutedEventArgs e)
-        {
-            if (_hasChanges)
-            {
-                var result = MessageBox.Show(
-                    "У вас есть несохраненные изменения. Закрыть без сохранения?",
-                    "Подтверждение",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.No) return;
-            }
-
-            this.Close();
+            var mainWindow = new MainWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, mainWindow);
         }
     }
 }

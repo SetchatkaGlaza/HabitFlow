@@ -64,6 +64,10 @@ namespace HabitFlow
         public MainWindow(Users user)
         {
             InitializeComponent();
+
+            // Применяем сохраненное состояние окна
+            WindowStateManager.ApplyWindowState(this);
+
             _currentUser = user;
             _context = new HabitTrackerEntities();
             _habits = new ObservableCollection<HabitViewModel>();
@@ -466,7 +470,6 @@ namespace HabitFlow
         private void CheckAchievements()
         {
             // Здесь можно добавить логику проверки достижений
-            // Например, проверить, достигнут ли новый рекорд
         }
 
         // Добавление привычки
@@ -520,7 +523,6 @@ namespace HabitFlow
                 {
                     try
                     {
-                        // Soft delete
                         habit.IsActive = false;
                         _context.SaveChanges();
 
@@ -624,85 +626,83 @@ namespace HabitFlow
         private void CheckForReminders()
         {
             // Здесь можно добавить логику проверки напоминаний
-            // Например, если есть непривычки, которые нужно отметить сегодня
         }
 
         // Открытие профиля
         private void UserProfile_Click(object sender, MouseButtonEventArgs e)
         {
-            ProfileWindow profileWindow = new ProfileWindow(_currentUser);
-            profileWindow.Owner = this;
-            profileWindow.ShowDialog();
-
-            // Обновляем имя пользователя (на случай изменения)
-            txtUserName.Text = _currentUser.UserName;
+            var profileWindow = new ProfileWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, profileWindow);
         }
 
         // Открытие статистики
         private void btnStatistics_Click(object sender, RoutedEventArgs e)
         {
-            StatisticsWindow statsWindow = new StatisticsWindow(_currentUser);
-            statsWindow.Owner = this;
-            statsWindow.ShowDialog();
+            var statsWindow = new StatisticsWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, statsWindow);
         }
 
         // Открытие истории
         private void btnHistory_Click(object sender, RoutedEventArgs e)
         {
-            HistoryWindow historyWindow = new HistoryWindow(_currentUser);
-            historyWindow.Owner = this;
-            historyWindow.ShowDialog();
+            var historyWindow = new HistoryWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, historyWindow);
         }
 
         // Открытие достижений
         private void btnAchievements_Click(object sender, RoutedEventArgs e)
         {
-            AchievementsWindow achievementsWindow = new AchievementsWindow(_currentUser);
-            achievementsWindow.Owner = this;
-            achievementsWindow.ShowDialog();
+            var achievementsWindow = new AchievementsWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, achievementsWindow);
         }
 
         // Открытие категорий
         private void btnCategories_Click(object sender, RoutedEventArgs e)
         {
-            CategoryWindow categoryWindow = new CategoryWindow(_currentUser);
-            categoryWindow.Owner = this;
+            var categoryWindow = new CategoryWindow(_currentUser);
+
+            // Для окон с диалогом используем другой подход
+            WindowStateManager.SaveWindowState(this);
 
             if (categoryWindow.ShowDialog() == true)
             {
-                // Если нужно обновить отображение с сортировкой по категориям
                 LoadHabits();
             }
+
+            // Восстанавливаем состояние текущего окна
+            this.WindowState = WindowStateManager.CurrentWindowState;
+            this.Width = WindowStateManager.CurrentWidth;
+            this.Height = WindowStateManager.CurrentHeight;
+            this.Left = WindowStateManager.CurrentLeft;
+            this.Top = WindowStateManager.CurrentTop;
         }
 
         // Открытие импорта/экспорта
         private void btnImportExport_Click(object sender, RoutedEventArgs e)
         {
-            ImportExportWindow importExportWindow = new ImportExportWindow(_currentUser);
-            importExportWindow.Owner = this;
-            importExportWindow.ShowDialog();
+            var importExportWindow = new ImportExportWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, importExportWindow);
         }
 
         // Открытие настроек
         private void btnSettings_Click(object sender, RoutedEventArgs e)
         {
-            SettingsWindow settingsWindow = new SettingsWindow(_currentUser);
-            settingsWindow.Owner = this;
-            settingsWindow.ShowDialog();
+            var settingsWindow = new SettingsWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, settingsWindow);
         }
 
         // Открытие информации о программе
         private void btnAbout_Click(object sender, RoutedEventArgs e)
         {
-            AboutWindow aboutWindow = new AboutWindow(_currentUser);
-            aboutWindow.Owner = this;
-            aboutWindow.ShowDialog();
+            var aboutWindow = new AboutWindow(_currentUser);
+            WindowStateManager.OpenWindow(this, aboutWindow);
         }
 
         // Управление окном
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnMaximize_Click(object sender, RoutedEventArgs e)
@@ -710,6 +710,7 @@ namespace HabitFlow
             this.WindowState = this.WindowState == WindowState.Normal
                 ? WindowState.Maximized
                 : WindowState.Normal;
+            WindowStateManager.SaveWindowState(this);
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
@@ -741,7 +742,7 @@ namespace HabitFlow
                 Settings.Default.Save();
 
                 // Открываем окно входа
-                LoginWindow loginWindow = new LoginWindow();
+                var loginWindow = new LoginWindow();
                 loginWindow.Show();
 
                 // Закрываем текущее окно

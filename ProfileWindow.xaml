@@ -13,8 +13,7 @@
         Background="Transparent"
         ResizeMode="NoResize"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        Loaded="Window_Loaded"
-        Closing="Window_Closing">
+        Loaded="Window_Loaded">
 
     <Border CornerRadius="20" Background="#F5F7FA" Padding="0">
         <Border.Effect>

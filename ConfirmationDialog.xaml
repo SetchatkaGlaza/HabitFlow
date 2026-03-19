@@ -287,16 +287,16 @@
                         </Button.Style>
                     </Button>
 
-                    <!-- Кнопка подтверждения / да -->
+                    <!-- Кнопка подтверждения / да / продолжить -->
                     <Button Grid.Column="2" x:Name="ConfirmButton" 
                             Content="Подтвердить" 
                             Height="45"
                             Background="#4CAF50" 
                             BorderBrush="Transparent"
-                            Foreground="#666"
+                            Foreground="White"
                             FontSize="14" FontWeight="SemiBold"
                             Cursor="Hand"
-                            IsEnabled="False"
+                            IsEnabled="True"
                             Click="ConfirmButton_Click">
                         <Button.Style>
                             <Style TargetType="Button">

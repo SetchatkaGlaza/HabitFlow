@@ -134,7 +134,7 @@ namespace HabitFlow
                     GradientStart.Color = (Color)ColorConverter.ConvertFromString("#3498DB");
                     GradientEnd.Color = (Color)ColorConverter.ConvertFromString("#2980B9");
                     ConfirmButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3498DB"));
-                    btnCloseIcon.Visibility = Visibility.Visible; // Можно закрыть
+                    btnCloseIcon.Visibility = Visibility.Visible;
                     break;
 
                 case ConfirmationType.Success:
@@ -142,7 +142,7 @@ namespace HabitFlow
                     GradientStart.Color = (Color)ColorConverter.ConvertFromString("#4CAF50");
                     GradientEnd.Color = (Color)ColorConverter.ConvertFromString("#45A049");
                     ConfirmButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50"));
-                    btnCloseIcon.Visibility = Visibility.Visible; // Можно закрыть
+                    btnCloseIcon.Visibility = Visibility.Visible;
                     break;
 
                 case ConfirmationType.Delete:
@@ -178,12 +178,6 @@ namespace HabitFlow
                     ConfirmButton.IsEnabled = false;
                     break;
             }
-
-            // Если есть ожидаемый ввод для подтверждения
-            if (!string.IsNullOrEmpty(_expectedInput) && _type == ConfirmationType.Input)
-            {
-                InputLabel.Text = $"Введите '{_expectedInput}' для подтверждения:";
-            }
         }
 
         // Анимация появления
@@ -191,7 +185,6 @@ namespace HabitFlow
         {
             var storyboard = new Storyboard();
 
-            // Анимация масштаба
             var scaleAnimation = new DoubleAnimation
             {
                 From = 0.8,
@@ -206,7 +199,6 @@ namespace HabitFlow
             Storyboard.SetTargetProperty(scaleAnimationY, new PropertyPath("(UIElement.RenderTransform).(ScaleTransform.ScaleY)"));
             storyboard.Children.Add(scaleAnimationY);
 
-            // Анимация прозрачности
             var opacityAnimation = new DoubleAnimation
             {
                 From = 0,
@@ -219,14 +211,12 @@ namespace HabitFlow
             storyboard.Begin(this);
         }
 
-        // Перемещение окна
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 this.DragMove();
         }
 
-        // Обработка ввода текста
         private void InputTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             ValidateInput();
@@ -245,7 +235,6 @@ namespace HabitFlow
 
                 if (!string.IsNullOrEmpty(_expectedInput))
                 {
-                    // Сравнение с ожидаемым текстом
                     bool isValid = _isInputCaseSensitive
                         ? input == _expectedInput
                         : input.Equals(_expectedInput, StringComparison.OrdinalIgnoreCase);
@@ -254,7 +243,6 @@ namespace HabitFlow
                 }
                 else
                 {
-                    // Просто проверка на непустой ввод
                     ConfirmButton.IsEnabled = !string.IsNullOrWhiteSpace(input);
                 }
             }
@@ -264,7 +252,6 @@ namespace HabitFlow
             }
         }
 
-        // Обработка кнопок
         private void ConfirmButton_Click(object sender, RoutedEventArgs e)
         {
             Result = _type == ConfirmationType.Input || _type == ConfirmationType.Password
@@ -276,6 +263,7 @@ namespace HabitFlow
 
             _confirmAction?.Invoke();
 
+            DialogResult = true;
             Close();
         }
 
@@ -283,16 +271,19 @@ namespace HabitFlow
         {
             Result = ConfirmationResult.Cancelled;
             _cancelAction?.Invoke();
+
+            DialogResult = false;
             Close();
         }
 
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             Result = ConfirmationResult.Cancelled;
+            DialogResult = false;
             Close();
         }
 
-        // Дополнительные методы для настройки
+        // Дополнительные методы
         public void SetDontAskAgain(bool show, string text = "Больше не спрашивать")
         {
             DontAskAgainCheckBox.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
@@ -304,11 +295,8 @@ namespace HabitFlow
             if (details != null && details.Any())
             {
                 DetailsBorder.Visibility = Visibility.Visible;
-                DetailsList.ItemsSource = details;
-
-                // Добавляем заголовок к деталям
-                var detailsList = details.ToList();
-                detailsList.Insert(0, title);
+                var detailsList = new List<string> { title };
+                detailsList.AddRange(details);
                 DetailsList.ItemsSource = detailsList;
             }
         }
@@ -328,8 +316,6 @@ namespace HabitFlow
             ProgressBorder.Visibility = Visibility.Visible;
             ProgressText.Text = text;
             ProgressBar.IsIndeterminate = isIndeterminate;
-
-            // Отключаем кнопки
             ConfirmButton.IsEnabled = false;
             CancelButton.IsEnabled = false;
         }
@@ -345,7 +331,7 @@ namespace HabitFlow
             }
         }
 
-        // Статические методы для быстрого вызова
+        // Статические методы
         public static bool Show(string title, string message,
                                 ConfirmationType type = ConfirmationType.Question,
                                 string confirmText = "Подтвердить",
@@ -356,15 +342,18 @@ namespace HabitFlow
             return dialog.Result == ConfirmationResult.Confirmed;
         }
 
-        public static ConfirmationResult ShowInput(string title, string message,
-                                           out string input,
-                                           string expectedInput = null,
-                                           bool isCaseSensitive = true)
+        public static ConfirmationResult ShowInput(string title, string message, out string input)
+        {
+            return ShowInput(title, message, out input, null, true);
+        }
+
+        public static ConfirmationResult ShowInput(string title, string message, out string input,
+                                                   string expectedInput, bool isCaseSensitive = true)
         {
             var dialog = new ConfirmationDialog(
                 title,
                 message,
-                expectedInput == null ? ConfirmationType.Input : ConfirmationType.Input,
+                ConfirmationType.Input,
                 "Подтвердить",
                 "Отмена",
                 expectedInput,
@@ -372,7 +361,6 @@ namespace HabitFlow
             );
 
             dialog.ShowDialog();
-
             input = dialog.InputValue;
             return dialog.Result;
         }
@@ -384,7 +372,7 @@ namespace HabitFlow
 
             if (details != null)
             {
-                dialog.SetDetails(details, "Будут удалены:");
+                dialog.SetDetails(details);
             }
 
             dialog.ShowDialog();
@@ -395,11 +383,8 @@ namespace HabitFlow
         {
             var dialog = new ConfirmationDialog(title, message, ConfirmationType.Info, "OK", "");
             dialog.CancelButton.Visibility = Visibility.Collapsed;
-
-            // Центрируем кнопку OK
             Grid.SetColumnSpan(dialog.ConfirmButton, 2);
             Grid.SetColumn(dialog.ConfirmButton, 0);
-
             dialog.ShowDialog();
         }
 
@@ -407,11 +392,8 @@ namespace HabitFlow
         {
             var dialog = new ConfirmationDialog(title, message, ConfirmationType.Success, "OK", "");
             dialog.CancelButton.Visibility = Visibility.Collapsed;
-
-            // Центрируем кнопку OK
             Grid.SetColumnSpan(dialog.ConfirmButton, 2);
             Grid.SetColumn(dialog.ConfirmButton, 0);
-
             dialog.ShowDialog();
         }
 
@@ -419,11 +401,8 @@ namespace HabitFlow
         {
             var dialog = new ConfirmationDialog(title, message, ConfirmationType.Error, "OK", "");
             dialog.CancelButton.Visibility = Visibility.Collapsed;
-
-            // Центрируем кнопку OK
             Grid.SetColumnSpan(dialog.ConfirmButton, 2);
             Grid.SetColumn(dialog.ConfirmButton, 0);
-
             dialog.ShowDialog();
         }
 
