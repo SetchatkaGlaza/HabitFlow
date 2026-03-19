@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:HabitFlow"
         mc:Ignorable="d"
         Title="Настройки приложения"
-        Height="900" Width="1000"
+        Height="950" Width="1000"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -54,7 +54,8 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button x:Name="btnMinimize" Content="─" Width="35" Height="35" 
                                 Background="Transparent" BorderBrush="Transparent" 
-                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click">
+                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click"
+                                ToolTip="Свернуть">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="17.5"/>
@@ -63,7 +64,8 @@
                         </Button>
                         <Button x:Name="btnClose" Content="✕" Width="35" Height="35" 
                                 Background="Transparent" BorderBrush="Transparent" 
-                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click">
+                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click"
+                                ToolTip="Закрыть">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="17.5"/>
@@ -136,7 +138,7 @@
                                             </ComboBox.Resources>
                                             <ComboBoxItem Content="Светлая" Tag="Light" IsSelected="True"/>
                                             <ComboBoxItem Content="Темная" Tag="Dark"/>
-                                            <ComboBoxItem Content="Системная (по умолчанию)" Tag="System"/>
+                                            <ComboBoxItem Content="Системная" Tag="System"/>
                                         </ComboBox>
 
                                         <TextBlock Grid.Row="2" Text="Выберите оформление интерфейса" 
@@ -356,6 +358,8 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
                                         <TextBlock Grid.Row="0" Text="Настройки уведомлений" 
@@ -394,8 +398,29 @@
 
                                         <CheckBox Grid.Row="4" x:Name="chkStreakNotifications" 
                                                   Content="Уведомлять о новых рекордах" 
-                                                  Margin="20,0,0,0"
+                                                  Margin="20,0,0,10"
                                                   IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}"
+                                                  IsChecked="True"/>
+
+                                        <!-- ДОБАВЛЕННЫЕ ТИПЫ УВЕДОМЛЕНИЙ -->
+                                        <TextBlock Grid.Row="5" Text="Типы уведомлений:" 
+                                                   FontSize="12" Foreground="#666" 
+                                                   Margin="20,5,0,5"
+                                                   IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}"/>
+
+                                        <CheckBox Grid.Row="6" x:Name="chkEmailNotifications" 
+                                                  Content="Email уведомления" 
+                                                  Margin="35,0,0,5"
+                                                  IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}"
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"/>
+
+                                        <CheckBox Grid.Row="7" x:Name="chkReminderNotifications" 
+                                                  Content="Напоминания о привычках"
+                                                  Margin="35,0,0,0"
+                                                  IsEnabled="{Binding ElementName=chkEnableNotifications, Path=IsChecked}"
+                                                  Checked="Setting_Changed"
+                                                  Unchecked="Setting_Changed"
                                                   IsChecked="True"/>
                                     </Grid>
                                 </Border>
@@ -652,6 +677,8 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Информация -->
@@ -669,8 +696,18 @@
                             Cursor="Hand"
                             Click="btnApply_Click"/>
 
+                    <!-- Кнопка обновления -->
+                    <Button Grid.Column="3" x:Name="btnRefresh" 
+                            Content="🔄 Обновить" 
+                            Height="40" Width="100"
+                            Background="#9B59B6" Foreground="White"
+                            BorderBrush="Transparent"
+                            FontSize="14" FontWeight="SemiBold"
+                            Cursor="Hand"
+                            Click="btnRefresh_Click"/>
+
                     <!-- Кнопка закрытия -->
-                    <Button Grid.Column="3" x:Name="btnBack" 
+                    <Button Grid.Column="5" x:Name="btnBack" 
                             Content="Закрыть" 
                             Height="40" Width="100"
                             Background="Transparent" 

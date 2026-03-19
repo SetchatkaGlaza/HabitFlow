@@ -1,13 +1,14 @@
 ﻿using HabitFlow.Entity;
+using HabitFlow.Properties;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Xml;
 
 namespace HabitFlow
 {
@@ -45,6 +46,10 @@ namespace HabitFlow
         public string Language { get; set; } = "ru";
         public bool RunOnStartup { get; set; } = false;
 
+        // Дополнительные уведомления (для ProfileWindow)
+        public bool EmailNotifications { get; set; } = false;
+        public bool ReminderNotifications { get; set; } = true;
+
         // Путь к файлу настроек
         private static string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -78,7 +83,7 @@ namespace HabitFlow
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
-                string json = JsonConvert.SerializeObject(this, Newtonsoft.Json.Formatting.Indented);
+                string json = JsonConvert.SerializeObject(this, Formatting.Indented);
                 File.WriteAllText(SettingsPath, json);
             }
             catch (Exception ex)
@@ -123,16 +128,22 @@ namespace HabitFlow
         {
             if (_hasUnsavedChanges)
             {
-                var result = MessageBox.Show("У вас есть несохраненные изменения. Сохранить?",
-                    "Подтверждение", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Сохранить?"
+                );
 
-                if (result == MessageBoxResult.Yes)
+                if (result == true)
                 {
                     SaveSettings();
                 }
-                else if (result == MessageBoxResult.Cancel)
+                else if (result == false)
                 {
-                    e.Cancel = true;
+                    // Просто закрываем без сохранения
+                }
+                else
+                {
+                    e.Cancel = true; // Отмена
                 }
             }
         }
@@ -209,6 +220,10 @@ namespace HabitFlow
             chkSoundOnComplete.IsChecked = _settings.SoundOnComplete;
             chkSoundOnReminder.IsChecked = _settings.SoundOnReminder;
 
+            // Типы уведомлений (новые)
+            chkEmailNotifications.IsChecked = _settings.EmailNotifications;
+            chkReminderNotifications.IsChecked = _settings.ReminderNotifications;
+
             // Данные
             chkAutoSave.IsChecked = _settings.AutoSave;
 
@@ -239,6 +254,13 @@ namespace HabitFlow
         // Сохранение настроек
         private void SaveSettings()
         {
+            // Проверка времени напоминания
+            if (!IsValidTime(txtReminderTime.Text))
+            {
+                ConfirmationDialog.ShowError("Ошибка", "Введите корректное время в формате ЧЧ:ММ (например, 20:00)");
+                return;
+            }
+
             // Тема
             if (cmbTheme.SelectedItem is System.Windows.Controls.ComboBoxItem themeItem)
                 _settings.Theme = themeItem.Tag?.ToString() ?? "Light";
@@ -271,6 +293,10 @@ namespace HabitFlow
             _settings.EnableSounds = chkEnableSounds.IsChecked ?? true;
             _settings.SoundOnComplete = chkSoundOnComplete.IsChecked ?? true;
             _settings.SoundOnReminder = chkSoundOnReminder.IsChecked ?? true;
+
+            // Типы уведомлений (новые)
+            _settings.EmailNotifications = chkEmailNotifications.IsChecked ?? false;
+            _settings.ReminderNotifications = chkReminderNotifications.IsChecked ?? true;
 
             // Данные
             _settings.AutoSave = chkAutoSave.IsChecked ?? true;
@@ -321,6 +347,12 @@ namespace HabitFlow
             {
                 System.Diagnostics.Debug.WriteLine($"Ошибка настройки автозапуска: {ex.Message}");
             }
+        }
+
+        // Проверка формата времени
+        private bool IsValidTime(string time)
+        {
+            return TimeSpan.TryParse(time, out _);
         }
 
         // Обновление предпросмотра цвета
@@ -404,6 +436,8 @@ namespace HabitFlow
             chkDailyReminder.IsEnabled = chkEnableNotifications.IsChecked ?? false;
             txtReminderTime.IsEnabled = chkEnableNotifications.IsChecked ?? false;
             chkStreakNotifications.IsEnabled = chkEnableNotifications.IsChecked ?? false;
+            chkEmailNotifications.IsEnabled = chkEnableNotifications.IsChecked ?? false;
+            chkReminderNotifications.IsEnabled = chkEnableNotifications.IsChecked ?? false;
         }
 
         // Применение настроек
@@ -412,8 +446,30 @@ namespace HabitFlow
             SaveSettings();
         }
 
+        // Кнопка обновления
+        private void btnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            if (_hasUnsavedChanges)
+            {
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Обновление приведет к их потере. Продолжить?"
+                );
+
+                if (!result) return;
+            }
+
+            _settings = AppSettings.Load();
+            LoadSettings();
+            UpdateColorPreview();
+            UpdateDateFormatPreview();
+            UpdateLastBackupInfo();
+
+            ShowSaveStatus("🔄 Настройки обновлены", "#9B59B6");
+        }
+
         // Резервное копирование
-        private void btnBackupNow_Click(object sender, RoutedEventArgs e)
+        private async void btnBackupNow_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -427,41 +483,55 @@ namespace HabitFlow
 
                 if (dialog.ShowDialog() == true)
                 {
-                    // Создаем резервную копию всех данных пользователя
-                    var backup = new
+                    var progressDialog = new ConfirmationDialog(
+                        "Создание резервной копии",
+                        "Выполняется создание резервной копии...",
+                        ConfirmationType.Info,
+                        "",
+                        "Отмена"
+                    );
+                    progressDialog.SetProgress(true);
+                    progressDialog.Owner = this;
+                    progressDialog.Show();
+
+                    await System.Threading.Tasks.Task.Run(() =>
                     {
-                        User = _currentUser,
-                        Habits = _context.Habits.Where(h => h.UserId == _currentUser.UserId).ToList(),
-                        Records = _context.HabitRecords
-                            .Where(r => r.Habits.UserId == _currentUser.UserId)
-                            .ToList(),
-                        BackupDate = DateTime.Now,
-                        AppVersion = "1.0.0"
-                    };
+                        // Создаем резервную копию всех данных пользователя
+                        var backup = new
+                        {
+                            User = _currentUser,
+                            Habits = _context.Habits.Where(h => h.UserId == _currentUser.UserId).ToList(),
+                            Records = _context.HabitRecords
+                                .Where(r => r.Habits.UserId == _currentUser.UserId)
+                                .ToList(),
+                            BackupDate = DateTime.Now,
+                            AppVersion = "1.0.0"
+                        };
 
-                    string json = JsonConvert.SerializeObject(backup, Newtonsoft.Json.Formatting.Indented);
-                    File.WriteAllText(dialog.FileName, json);
+                        string json = JsonConvert.SerializeObject(backup, Formatting.Indented);
+                        File.WriteAllText(dialog.FileName, json);
 
-                    // Сохраняем информацию о бэкапе
-                    string backupInfoPath = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                        "HabitFlow", "backups", "backup_info.txt");
+                        // Сохраняем информацию о бэкапе
+                        string backupInfoPath = Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                            "HabitFlow", "backups", "backup_info.txt");
 
-                    string directory = Path.GetDirectoryName(backupInfoPath);
-                    if (!Directory.Exists(directory))
-                        Directory.CreateDirectory(directory);
+                        string directory = Path.GetDirectoryName(backupInfoPath);
+                        if (!Directory.Exists(directory))
+                            Directory.CreateDirectory(directory);
 
-                    File.AppendAllText(backupInfoPath,
-                        $"Резервная копия создана: {DateTime.Now:dd.MM.yyyy HH:mm} - {dialog.FileName}\n");
+                        File.AppendAllText(backupInfoPath,
+                            $"Резервная копия создана: {DateTime.Now:dd.MM.yyyy HH:mm} - {dialog.FileName}\n");
+                    });
 
+                    progressDialog.Close();
                     ShowSaveStatus("✅ Резервная копия создана", "#4CAF50");
                     UpdateLastBackupInfo();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при создании резервной копии: {ex.Message}",
-                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при создании резервной копии: {ex.Message}");
             }
         }
 
@@ -479,14 +549,12 @@ namespace HabitFlow
 
                 if (dialog.ShowDialog() == true)
                 {
-                    var result = MessageBox.Show(
-                        "Восстановление из резервной копии ЗАМЕНИТ все текущие данные.\n\n" +
-                        "Вы уверены, что хотите продолжить?",
+                    var result = ConfirmationDialog.ShowWarning(
                         "Подтверждение восстановления",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
+                        "Восстановление из резервной копии ЗАМЕНИТ все текущие данные.\n\nВы уверены, что хотите продолжить?"
+                    );
 
-                    if (result == MessageBoxResult.Yes)
+                    if (result)
                     {
                         string json = File.ReadAllText(dialog.FileName);
                         var backup = JsonConvert.DeserializeObject<dynamic>(json);
@@ -494,11 +562,8 @@ namespace HabitFlow
                         // Здесь должна быть логика восстановления данных
                         // В реальном проекте нужно аккуратно обновить БД
 
-                        MessageBox.Show("Восстановление из резервной копии завершено.\n\n" +
-                                       "Приложение будет перезапущено.",
-                            "Восстановление завершено",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                        ConfirmationDialog.ShowInfo("Восстановление завершено",
+                            "Восстановление из резервной копии завершено.\n\nПриложение будет перезапущено.");
 
                         // Перезапуск приложения
                         System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
@@ -508,21 +573,19 @@ namespace HabitFlow
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при восстановлении: {ex.Message}",
-                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialog.ShowError("Ошибка", $"Ошибка при восстановлении: {ex.Message}");
             }
         }
 
         // Сброс настроек
         private void btnResetToDefault_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "Сбросить все настройки к значениям по умолчанию?",
+            var result = ConfirmationDialog.ShowWarning(
                 "Сброс настроек",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                "Сбросить все настройки к значениям по умолчанию?"
+            );
 
-            if (result == MessageBoxResult.Yes)
+            if (result)
             {
                 _settings = new AppSettings();
                 LoadSettings();
@@ -534,19 +597,18 @@ namespace HabitFlow
         // Очистка всех данных
         private void btnClearAllData_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "⚠️ ВНИМАНИЕ! ⚠️\n\n" +
-                "Это действие полностью удалит ВСЕ ваши данные:\n" +
-                "• Все привычки\n" +
-                "• Всю историю отметок\n" +
-                "• Статистику и достижения\n\n" +
-                "Это действие НЕОБРАТИМО!\n\n" +
-                "Вы действительно хотите очистить все данные?",
+            var result = ConfirmationDialog.ShowDelete(
                 "Очистка всех данных",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                "Это действие полностью удалит ВСЕ ваши данные:",
+                new List<string>
+                {
+                    "• Все привычки",
+                    "• Всю историю отметок",
+                    "• Статистику и достижения"
+                }
+            );
 
-            if (result == MessageBoxResult.Yes)
+            if (result)
             {
                 try
                 {
@@ -565,11 +627,8 @@ namespace HabitFlow
 
                     ShowSaveStatus("✅ Все данные удалены", "#4CAF50");
 
-                    MessageBox.Show("Все данные успешно удалены.\n\n" +
-                                   "Приложение будет перезапущено.",
-                        "Очистка завершена",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    ConfirmationDialog.ShowInfo("Очистка завершена",
+                        "Все данные успешно удалены.\n\nПриложение будет перезапущено.");
 
                     // Перезапуск приложения
                     System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
@@ -577,8 +636,7 @@ namespace HabitFlow
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Ошибка при очистке данных: {ex.Message}",
-                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ConfirmationDialog.ShowError("Ошибка", $"Ошибка при очистке данных: {ex.Message}");
                 }
             }
         }
@@ -598,15 +656,17 @@ namespace HabitFlow
         {
             if (_hasUnsavedChanges)
             {
-                var result = MessageBox.Show("У вас есть несохраненные изменения. Сохранить?",
-                    "Подтверждение", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                var result = ConfirmationDialog.ShowWarning(
+                    "Несохраненные изменения",
+                    "У вас есть несохраненные изменения. Сохранить?"
+                );
 
-                if (result == MessageBoxResult.Yes)
+                if (result == true)
                 {
                     SaveSettings();
                     this.Close();
                 }
-                else if (result == MessageBoxResult.No)
+                else if (result == false)
                 {
                     this.Close();
                 }

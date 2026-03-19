@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HabitFlow"
-        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Title="HabitFlow - Трекер привычек"
         Height="850" Width="1200"
@@ -57,8 +56,94 @@
                     <!-- Профиль и управление окном -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
 
+                        <!-- Кнопки навигации -->
+                        <Button x:Name="btnStatistics" 
+                                Content="📊" 
+                                Width="40" Height="40"
+                                Background="#3498DB" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="0,0,5,0"
+                                ToolTip="Статистика"
+                                Click="btnStatistics_Click"/>
+
+                        <Button x:Name="btnHistory" 
+                                Content="📜" 
+                                Width="40" Height="40"
+                                Background="#9B59B6" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="5"
+                                ToolTip="История"
+                                Click="btnHistory_Click"/>
+
+                        <Button x:Name="btnAchievements" 
+                                Content="🏆" 
+                                Width="40" Height="40"
+                                Background="#FFD700" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="5"
+                                ToolTip="Достижения"
+                                Click="btnAchievements_Click"/>
+
+                        <Button x:Name="btnCategories" 
+                                Content="📁" 
+                                Width="40" Height="40"
+                                Background="#E67E22" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="5"
+                                ToolTip="Категории"
+                                Click="btnCategories_Click"/>
+
+                        <Button x:Name="btnImportExport" 
+                                Content="📦" 
+                                Width="40" Height="40"
+                                Background="#1ABC9C" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="5"
+                                ToolTip="Импорт/Экспорт"
+                                Click="btnImportExport_Click"/>
+
+                        <Button x:Name="btnSettings" 
+                                Content="⚙️" 
+                                Width="40" Height="40"
+                                Background="#95A5A6" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="5"
+                                ToolTip="Настройки"
+                                Click="btnSettings_Click"/>
+
+                        <Button x:Name="btnAbout" 
+                                Content="ℹ️" 
+                                Width="40" Height="40"
+                                Background="#34495E" 
+                                Foreground="White"
+                                BorderBrush="Transparent"
+                                FontSize="20"
+                                Cursor="Hand"
+                                Margin="5,5,20,5"
+                                ToolTip="О программе"
+                                Click="btnAbout_Click"/>
+
                         <!-- Аватар и имя пользователя -->
-                        <Border Background="#4CAF50" CornerRadius="20" Padding="10,5" Margin="0,0,20,0">
+                        <Border Background="#4CAF50" CornerRadius="20" Padding="10,5" Margin="0,0,20,0" 
+                                Cursor="Hand" MouseLeftButtonDown="UserProfile_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="👤" FontSize="14" Margin="0,0,5,0"/>
                                 <TextBlock x:Name="txtUserName" Text="Пользователь" Foreground="White" FontWeight="SemiBold"/>
@@ -66,9 +151,18 @@
                         </Border>
 
                         <!-- Кнопки управления окном -->
-                        <Button x:Name="btnMinimize" Content="─" Width="30" Height="30" Background="Transparent" BorderBrush="Transparent" FontSize="16" Cursor="Hand" Click="btnMinimize_Click"/>
-                        <Button x:Name="btnMaximize" Content="□" Width="30" Height="30" Background="Transparent" BorderBrush="Transparent" FontSize="16" Cursor="Hand" Click="btnMaximize_Click"/>
-                        <Button x:Name="btnClose" Content="✕" Width="30" Height="30" Background="Transparent" BorderBrush="Transparent" FontSize="16" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click"/>
+                        <Button x:Name="btnMinimize" Content="─" Width="30" Height="30" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="16" Cursor="Hand" Click="btnMinimize_Click"
+                                ToolTip="Свернуть"/>
+                        <Button x:Name="btnMaximize" Content="□" Width="30" Height="30" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="16" Cursor="Hand" Click="btnMaximize_Click"
+                                ToolTip="Развернуть"/>
+                        <Button x:Name="btnClose" Content="✕" Width="30" Height="30" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="16" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click"
+                                ToolTip="Закрыть"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -90,6 +184,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
@@ -100,7 +195,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="Мои привычки на эту неделю" FontSize="18" FontWeight="SemiBold" Foreground="#333"/>
+                            <TextBlock Grid.Column="0" Text="Мои привычки на эту неделю" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333"/>
 
                             <Button Grid.Column="1" x:Name="btnAddHabit" 
                                     Content="➕ Добавить привычку" 
@@ -109,6 +205,11 @@
                                     BorderBrush="Transparent" 
                                     Cursor="Hand" FontSize="14" FontWeight="SemiBold"
                                     Click="btnAddHabit_Click">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="8"/>
+                                    </Style>
+                                </Button.Resources>
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Opacity" Value="1"/>
@@ -122,8 +223,31 @@
                             </Button>
                         </Grid>
 
+                        <!-- Фильтр по категориям -->
+                        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="8" Padding="10" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="Категория:" FontSize="12" Foreground="#666" 
+                                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                                <ComboBox Grid.Column="1" x:Name="cmbCategoryFilter" 
+                                          Height="30" FontSize="12"
+                                          SelectionChanged="cmbCategoryFilter_SelectionChanged">
+                                    <ComboBox.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="6"/>
+                                        </Style>
+                                    </ComboBox.Resources>
+                                </ComboBox>
+                            </Grid>
+                        </Border>
+
                         <!-- Заголовки дней недели -->
-                        <ItemsControl Grid.Row="1" x:Name="weekDayHeaders" Margin="150,0,0,10">
+                        <ItemsControl Grid.Row="2" x:Name="weekDayHeaders" Margin="150,0,0,10">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch"/>
@@ -142,7 +266,7 @@
                         </ItemsControl>
 
                         <!-- Список привычек с отметками -->
-                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl x:Name="habitsListView">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -156,7 +280,10 @@
 
                                                 <!-- Информация о привычке -->
                                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding HabitName}" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding IconEmoji}" FontSize="18" Margin="0,0,5,0"/>
+                                                        <TextBlock Text="{Binding HabitName}" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                                    </StackPanel>
                                                     <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                                                         <Border Background="#4CAF5020" CornerRadius="12" Padding="8,2">
                                                             <TextBlock Text="{Binding CurrentStreak, StringFormat='🔥 {0} дней'}" FontSize="11" Foreground="#4CAF50"/>
@@ -224,7 +351,13 @@
                                                             FontSize="16" Cursor="Hand"
                                                             Tag="{Binding HabitId}"
                                                             Click="btnEditHabit_Click"
-                                                            ToolTip="Редактировать"/>
+                                                            ToolTip="Редактировать">
+                                                        <Button.Resources>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="CornerRadius" Value="8"/>
+                                                            </Style>
+                                                        </Button.Resources>
+                                                    </Button>
 
                                                     <Button x:Name="btnDeleteHabit" 
                                                             Content="🗑️" 
@@ -234,7 +367,13 @@
                                                             Tag="{Binding HabitId}"
                                                             Click="btnDeleteHabit_Click"
                                                             ToolTip="Удалить"
-                                                            Margin="5,0,0,0"/>
+                                                            Margin="5,0,0,0">
+                                                        <Button.Resources>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="CornerRadius" Value="8"/>
+                                                            </Style>
+                                                        </Button.Resources>
+                                                    </Button>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -389,6 +528,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Мотивационное сообщение -->
@@ -396,8 +537,19 @@
                                Text="Маленькие шаги каждый день приводят к большим результатам! 🌟" 
                                Foreground="#666" VerticalAlignment="Center"/>
 
+                    <!-- Кнопка информации о программе -->
+                    <Button Grid.Column="1" x:Name="btnAboutBottom" 
+                            Content="ℹ️ О программе" 
+                            Height="35" Padding="10,0"
+                            Background="Transparent" 
+                            BorderBrush="#E0E0E0" 
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            FontSize="11"
+                            Click="btnAbout_Click"/>
+
                     <!-- Кнопка выхода -->
-                    <Button Grid.Column="1" x:Name="btnLogout" 
+                    <Button Grid.Column="3" x:Name="btnLogout" 
                             Content="🚪 Выйти" 
                             Height="35" Padding="15,0"
                             Background="Transparent" 
@@ -405,7 +557,6 @@
                             BorderThickness="1"
                             Cursor="Hand"
                             Click="btnLogout_Click"/>
-                    
                 </Grid>
             </Border>
 

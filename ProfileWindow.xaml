@@ -5,8 +5,702 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HabitFlow"
         mc:Ignorable="d"
-        Title="ProfileWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="Профиль пользователя"
+        Height="750" Width="1100"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+
+    <Border CornerRadius="20" Background="#F5F7FA" Padding="0">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="0" Color="#33000000" Opacity="0.3"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="80"/>
+            </Grid.RowDefinitions>
+
+            <!-- ==================== ВЕРХНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="0" Background="White" CornerRadius="20,20,0,0" Padding="25,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Заголовок -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="👤" FontSize="28" Margin="0,0,10,0"/>
+                        <TextBlock Text="Профиль пользователя" FontSize="24" FontWeight="SemiBold" Foreground="#333"/>
+                    </StackPanel>
+
+                    <!-- Дата и время -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Background="#F0F0F0" CornerRadius="15" Padding="15,5">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="txtCurrentDateTime" Text="" FontSize="14" Foreground="#666"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Кнопки управления -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="btnMinimize" Content="─" Width="35" Height="35" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="18" Cursor="Hand" Click="btnMinimize_Click"
+                                ToolTip="Свернуть">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button x:Name="btnClose" Content="✕" Width="35" Height="35" 
+                                Background="Transparent" BorderBrush="Transparent" 
+                                FontSize="18" Foreground="#E74C3C" Cursor="Hand" Click="btnClose_Click"
+                                ToolTip="Закрыть">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ==================== ОСНОВНОЙ КОНТЕНТ ==================== -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <Grid Margin="25">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- ВЕРХНИЙ БЛОК: Профиль и статистика -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="350"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Левая колонка: Аватар и основная информация -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="15" Padding="25">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Аватар -->
+                                <Border Grid.Row="0" Width="150" Height="150" CornerRadius="75" 
+                                        Background="#4CAF50" Margin="0,0,0,20" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="txtInitials" Text="U" FontSize="48" FontWeight="Bold" 
+                                               Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Имя пользователя -->
+                                <TextBlock Grid.Row="1" x:Name="txtFullName" Text="Пользователь" 
+                                           FontSize="24" FontWeight="SemiBold" Foreground="#333" 
+                                           HorizontalAlignment="Center" Margin="0,0,0,5"/>
+
+                                <!-- Email -->
+                                <TextBlock Grid.Row="2" x:Name="txtEmail" Text="email@example.com" 
+                                           FontSize="14" Foreground="#666" 
+                                           HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+                                <!-- Дата регистрации -->
+                                <Border Grid.Row="3" Background="#F0F0F0" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="📅" FontSize="16" Margin="0,0,10,0"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Дата регистрации" FontSize="12" Foreground="#999"/>
+                                            <TextBlock x:Name="txtRegistrationDate" Text="01.01.2024" FontSize="14" FontWeight="SemiBold" Foreground="#333"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Последний вход -->
+                                <Border Grid.Row="4" Background="#F0F0F0" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="⏱️" FontSize="16" Margin="0,0,10,0"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Последний вход" FontSize="12" Foreground="#999"/>
+                                            <TextBlock x:Name="txtLastLogin" Text="только что" FontSize="14" FontWeight="SemiBold" Foreground="#333"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Статус активности -->
+                                <Border Grid.Row="5" Background="#4CAF5020" CornerRadius="10" Padding="15">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="🟢" FontSize="14" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="Аккаунт активен" FontSize="14" Foreground="#4CAF50" FontWeight="SemiBold"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Правая колонка: Статистика активности -->
+                        <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="25">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Заголовок -->
+                                <TextBlock Grid.Row="0" Text="Статистика активности" 
+                                           FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                           Margin="0,0,0,20"/>
+
+                                <!-- Основные показатели -->
+                                <Grid Grid.Row="1" Margin="0,0,0,25">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Дней в приложении -->
+                                    <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="0,0,5,0">
+                                        <StackPanel>
+                                            <TextBlock Text="📆" FontSize="24" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtDaysInApp" Text="0" FontSize="28" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="дней в приложении" FontSize="12" Foreground="#999" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Всего отметок -->
+                                    <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5,0">
+                                        <StackPanel>
+                                            <TextBlock Text="✅" FontSize="24" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtTotalCheckins" Text="0" FontSize="28" FontWeight="Bold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="всего отметок" FontSize="12" Foreground="#999" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Активных привычек -->
+                                    <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5,0,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="🎯" FontSize="24" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtActiveHabits" Text="0" FontSize="28" FontWeight="Bold" Foreground="#E67E22" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="активных привычек" FontSize="12" Foreground="#999" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Дополнительная статистика -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="🔥" FontSize="16" Margin="0,0,10,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Лучшая серия" FontSize="12" Foreground="#999"/>
+                                                <TextBlock x:Name="txtBestStreak" Text="0 дней" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="⭐" FontSize="16" Margin="0,0,10,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Процент выполнения" FontSize="12" Foreground="#999"/>
+                                                <TextBlock x:Name="txtSuccessRate" Text="0%" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                        <Grid Margin="0,0,0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="📊" FontSize="16" Margin="0,0,10,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Этот месяц" FontSize="12" Foreground="#999"/>
+                                                <TextBlock x:Name="txtMonthlyProgress" Text="0%" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="🏆" FontSize="16" Margin="0,0,10,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Достижений" FontSize="12" Foreground="#999"/>
+                                                <TextBlock x:Name="txtAchievements" Text="0" FontSize="16" FontWeight="SemiBold" Foreground="#333"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- НИЖНИЙ БЛОК: Настройки профиля -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Левая колонка: Редактирование профиля -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="15" Padding="25">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Заголовок -->
+                                <TextBlock Grid.Row="0" Text="Редактирование профиля" 
+                                           FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                           Margin="0,0,0,20"/>
+
+                                <!-- Имя пользователя -->
+                                <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                                    <TextBlock Text="Имя пользователя" FontSize="14" Foreground="#666" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="txtEditUsername" 
+                                             Height="45" FontSize="16" Padding="12,0"
+                                             BorderBrush="#DDD" BorderThickness="1"
+                                             TextChanged="txtEditUsername_TextChanged"
+                                             MaxLength="100">
+                                        <TextBox.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8"/>
+                                            </Style>
+                                        </TextBox.Resources>
+                                    </TextBox>
+                                </StackPanel>
+
+                                <!-- Email -->
+                                <StackPanel Grid.Row="2" Margin="0,0,0,15">
+                                    <TextBlock Text="Email" FontSize="14" Foreground="#666" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="txtEditEmail" 
+                                             Height="45" FontSize="16" Padding="12,0"
+                                             BorderBrush="#DDD" BorderThickness="1"
+                                             TextChanged="txtEditUsername_TextChanged"
+                                             MaxLength="255">
+                                        <TextBox.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8"/>
+                                            </Style>
+                                        </TextBox.Resources>
+                                    </TextBox>
+                                </StackPanel>
+
+                                <!-- Выбор аватара (упрощенно) -->
+                                <StackPanel Grid.Row="3" Margin="0,0,0,15">
+                                    <TextBlock Text="Цвет аватара" FontSize="14" Foreground="#666" Margin="0,0,0,5"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="btnAvatarColor1" Width="35" Height="35" Background="#4CAF50" 
+                                                Margin="2" Cursor="Hand" Tag="#4CAF50" Click="AvatarColor_Click"
+                                                ToolTip="Зеленый">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button x:Name="btnAvatarColor2" Width="35" Height="35" Background="#3498DB" 
+                                                Margin="2" Cursor="Hand" Tag="#3498DB" Click="AvatarColor_Click"
+                                                ToolTip="Синий">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button x:Name="btnAvatarColor3" Width="35" Height="35" Background="#E74C3C" 
+                                                Margin="2" Cursor="Hand" Tag="#E74C3C" Click="AvatarColor_Click"
+                                                ToolTip="Красный">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button x:Name="btnAvatarColor4" Width="35" Height="35" Background="#F39C12" 
+                                                Margin="2" Cursor="Hand" Tag="#F39C12" Click="AvatarColor_Click"
+                                                ToolTip="Оранжевый">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button x:Name="btnAvatarColor5" Width="35" Height="35" Background="#9B59B6" 
+                                                Margin="2" Cursor="Hand" Tag="#9B59B6" Click="AvatarColor_Click"
+                                                ToolTip="Фиолетовый">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="17.5"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Кнопка сохранения изменений -->
+                                <Button Grid.Row="4" x:Name="btnSaveProfile" 
+                                        Content="💾 Сохранить изменения" 
+                                        Height="45" 
+                                        Background="#4CAF50" Foreground="White"
+                                        BorderBrush="Transparent"
+                                        FontSize="14" FontWeight="SemiBold"
+                                        Cursor="Hand" IsEnabled="False"
+                                        Click="btnSaveProfile_Click"
+                                        Margin="0,10,0,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Opacity" Value="1"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.9"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#CCCCCC"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Сообщение об успехе -->
+                                <TextBlock Grid.Row="5" x:Name="txtSaveSuccess" 
+                                           Text="✅ Изменения сохранены" 
+                                           Foreground="#4CAF50" FontSize="12"
+                                           HorizontalAlignment="Center" Margin="0,10,0,0"
+                                           Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Правая колонка: Смена пароля и настройки -->
+                        <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="25">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Заголовок -->
+                                <TextBlock Grid.Row="0" Text="Безопасность и настройки" 
+                                           FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                           Margin="0,0,0,20"/>
+
+                                <!-- Текущий пароль -->
+                                <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                                    <TextBlock Text="Текущий пароль" FontSize="14" Foreground="#666" Margin="0,0,0,5"/>
+                                    <PasswordBox x:Name="txtCurrentPassword" 
+                                                 Height="45" FontSize="16" Padding="12,0"
+                                                 BorderBrush="#DDD" BorderThickness="1"
+                                                 PasswordChanged="txtPassword_Changed">
+                                        <PasswordBox.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8"/>
+                                            </Style>
+                                        </PasswordBox.Resources>
+                                    </PasswordBox>
+                                </StackPanel>
+
+                                <!-- Новый пароль -->
+                                <StackPanel Grid.Row="2" Margin="0,0,0,15">
+                                    <TextBlock Text="Новый пароль" FontSize="14" Foreground="#666" Margin="0,0,0,5"/>
+                                    <PasswordBox x:Name="txtNewPassword" 
+                                                 Height="45" FontSize="16" Padding="12,0"
+                                                 BorderBrush="#DDD" BorderThickness="1"
+                                                 PasswordChanged="txtPassword_Changed">
+                                        <PasswordBox.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8"/>
+                                            </Style>
+                                        </PasswordBox.Resources>
+                                    </PasswordBox>
+                                </StackPanel>
+
+                                <!-- Подтверждение пароля -->
+                                <StackPanel Grid.Row="3" Margin="0,0,0,15">
+                                    <TextBlock Text="Подтвердите новый пароль" FontSize="14" Foreground="#666" Margin="0,0,0,5"/>
+                                    <PasswordBox x:Name="txtConfirmPassword" 
+                                                 Height="45" FontSize="16" Padding="12,0"
+                                                 BorderBrush="#DDD" BorderThickness="1"
+                                                 PasswordChanged="txtPassword_Changed">
+                                        <PasswordBox.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="8"/>
+                                            </Style>
+                                        </PasswordBox.Resources>
+                                    </PasswordBox>
+                                </StackPanel>
+
+                                <!-- Индикатор сложности пароля -->
+                                <Border Grid.Row="4" Height="5" CornerRadius="3" Background="#EEE" Margin="0,0,0,15">
+                                    <Border x:Name="passwordStrengthFill" Width="0" Height="5" 
+                                            CornerRadius="3" Background="#4CAF50" HorizontalAlignment="Left"/>
+                                </Border>
+
+                                <!-- Кнопка смены пароля -->
+                                <Button Grid.Row="5" x:Name="btnChangePassword" 
+                                        Content="🔒 Сменить пароль" 
+                                        Height="45" 
+                                        Background="#3498DB" Foreground="White"
+                                        BorderBrush="Transparent"
+                                        FontSize="14" FontWeight="SemiBold"
+                                        Cursor="Hand" IsEnabled="False"
+                                        Click="btnChangePassword_Click">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Opacity" Value="1"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.9"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#CCCCCC"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Настройка двухфакторной аутентификации -->
+                                <Button Grid.Row="6" x:Name="btn2FA" 
+                                        Content="🔐 Настроить двухфакторную аутентификацию" 
+                                        Height="40" Margin="0,15,0,0"
+                                        Background="Transparent" 
+                                        BorderBrush="#DDD" BorderThickness="1"
+                                        Foreground="#666"
+                                        FontSize="12"
+                                        Cursor="Hand"
+                                        Click="btn2FA_Click"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Дополнительные настройки (внизу) -->
+                    <Border Grid.Row="2" Background="White" CornerRadius="15" Padding="25" Margin="0,20,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#1A000000" Opacity="0.1"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Дополнительные настройки" 
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#333" 
+                                       Margin="0,0,0,20"/>
+
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Тема оформления -->
+                                <Border Grid.Column="0" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="0,0,5,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="🎨 Тема оформления" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbTheme" Height="35" SelectedIndex="0"
+                                                  SelectionChanged="Setting_Changed">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="5"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Светлая" Tag="Light"/>
+                                            <ComboBoxItem Content="Темная" Tag="Dark"/>
+                                            <ComboBoxItem Content="Системная" Tag="System"/>
+                                        </ComboBox>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Язык интерфейса -->
+                                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="🌐 Язык" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
+
+                                        <ComboBox Grid.Row="1" x:Name="cmbLanguage" Height="35" SelectedIndex="0"
+                                                  SelectionChanged="Setting_Changed">
+                                            <ComboBox.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="5"/>
+                                                </Style>
+                                            </ComboBox.Resources>
+                                            <ComboBoxItem Content="Русский" Tag="ru"/>
+                                            <ComboBoxItem Content="English" Tag="en"/>
+                                            <ComboBoxItem Content="Қазақша" Tag="kk"/>
+                                        </ComboBox>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Уведомления -->
+                                <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="10" Padding="15" Margin="5,0,0,0">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Text="🔔 Уведомления" FontSize="14" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,10"/>
+
+                                        <StackPanel Grid.Row="1">
+                                            <CheckBox x:Name="chkEmailNotifications" 
+                                                      Content="Email уведомления" 
+                                                      Margin="0,0,0,5"
+                                                      Checked="Setting_Changed"
+                                                      Unchecked="Setting_Changed"/>
+                                            <CheckBox x:Name="chkReminderNotifications" 
+                                                      Content="Напоминания о привычках"
+                                                      Checked="Setting_Changed"
+                                                      Unchecked="Setting_Changed"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- ==================== НИЖНЯЯ ПАНЕЛЬ ==================== -->
+            <Border Grid.Row="2" Background="White" CornerRadius="0,0,20,20" Padding="25,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Статус изменений -->
+                    <TextBlock Grid.Column="0" x:Name="txtStatusMessage" 
+                               Text="Готово" 
+                               Foreground="#666" 
+                               VerticalAlignment="Center"
+                               FontSize="12"/>
+
+                    <!-- Кнопка сброса настроек -->
+                    <Button Grid.Column="1" x:Name="btnResetSettings" 
+                            Content="🔄 Сбросить настройки" 
+                            Height="40" Padding="15,0"
+                            Background="Transparent" 
+                            BorderBrush="#DDD" 
+                            BorderThickness="1.5"
+                            Foreground="#666"
+                            Cursor="Hand"
+                            FontSize="12"
+                            Click="btnResetSettings_Click"/>
+
+                    <!-- Кнопка назад -->
+                    <Button Grid.Column="3" x:Name="btnBack" 
+                            Content="◀ Назад" 
+                            Height="40" Width="100"
+                            Background="Transparent" 
+                            BorderBrush="#DDD" 
+                            BorderThickness="1.5"
+                            Foreground="#666"
+                            Cursor="Hand"
+                            Click="btnBack_Click"/>
+
+                    <!-- Кнопка удаления аккаунта -->
+                    <Button Grid.Column="5" x:Name="btnDeleteAccount" 
+                            Content="🗑 Удалить аккаунт" 
+                            Height="40" Padding="15,0"
+                            Background="Transparent" 
+                            BorderBrush="#E74C3C" 
+                            BorderThickness="1.5"
+                            Foreground="#E74C3C"
+                            Cursor="Hand"
+                            Click="btnDeleteAccount_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
